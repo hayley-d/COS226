@@ -19,22 +19,30 @@ public class Marker extends Thread {
        //mark paper paper.mark()
        //continue while there are papers on the queue
         boolean flag = true;
-        while(!allPapers.isEmpty()) {
+        while(flag)
+        {
             lock.lock();
-            try{
-                Paper paper = allPapers.poll();
-                if(paper != null)
-                {
-                    paper.mark();
+            try
+            {
+                if(!allPapers.isEmpty()){
+                    Paper paper = allPapers.poll();
+                    if(paper != null)
+                    {
+                        paper.mark();
+                    }
                 }else{
-                   break;
+                    flag = false;
                 }
-            }
-            catch(Exception e){
-                e.printStackTrace();
-            }
-            finally {
-
+                /*while(!allPapers.isEmpty()) {
+                        Paper paper = allPapers.poll();
+                        if(paper != null)
+                        {
+                            paper.mark();
+                        }else{
+                            break;
+                        }
+                }*/
+            } finally {
                 lock.unlock();
             }
         }

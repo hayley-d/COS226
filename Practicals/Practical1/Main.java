@@ -15,6 +15,16 @@ public class Main {
         papers.add(paper3);
         papers.add(paper4);
         papers.add(paper5);
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
 
         Output output = new Output();
         Threeterson lock = new Threeterson(output);
@@ -33,6 +43,8 @@ public class Main {
        m1.join();
        m2.join();
        m3.join();
+
+        System.out.println(output);
 
 
 

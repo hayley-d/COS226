@@ -15,6 +15,11 @@ public class Threeterson implements Lock {
         this.output = output;
         this.level = new int[3];
         this.victim = new int[3];
+
+        for(int i = 0; i < 3; i++) {
+            level[i] = -1;
+            victim[i] = -1;
+        }
     }
 
    
@@ -22,25 +27,86 @@ public class Threeterson implements Lock {
     @Override
     public void lock() {
        int id = (int)(Thread.currentThread().getId() % 3);
+       boolean empty = true;
        for(int i = 1; i < 3; i++)
        {
-           level[id] = i;
-           output.println(Thread.currentThread().getName() + " at L" + i);
-           victim[i] = id;
-           output.println(Thread.currentThread().getName() + " is a victim of L" + i);
-           for(int j = 0; j < 3; j++){
-               if(j==id) continue;
-               while(level[j] >= i && victim[i] == id);
+           printLock.lock();
+           try {
+               output.println(Thread.currentThread().getName() + " is a victim of L" + i);
+               victim[i] = id;
+
+               for(int k = 0; k < 3; k++){
+                   if(k == id) continue;
+
+                   if(level[k] == i) {
+                       empty = false;
+                       break;
+                   }
+               }
+               if(empty) {
+                   level[id] = i;
+                   output.println(Thread.currentThread().getName() + " at L" + i);
+               }
+           } finally {
+               printLock.unlock();
            }
+
+           if(empty) {
+               continue;
+           }
+
+               boolean found = false;
+               do{
+                   found = false;
+                   printLock.lock();
+                   try {
+                       for (int j = 0; j < 3; j++) {
+                           if (j == id) {
+                               continue;
+                           }
+
+                               if (level[j] >= i && victim[i] == id) {
+                                   found = true;
+                                   break;
+                               }
+                           }
+                   } finally {
+                       printLock.unlock();
+                   }
+
+               } while(found);
+
+               printLock.lock();
+            try{
+               output.println(Thread.currentThread().getName() + " at L" + i);
+               level[id] = i;
+           } finally{
+               printLock.unlock();
+           }
+
+
+          /* output.println(Thread.currentThread().getName() + " at L" + i);
+           level[id] = i;*/
        }
-       output.println(Thread.currentThread().getName() + " has the lock");
+
+       printLock.lock();
+       try{
+           level[id] = 3;
+           output.println(Thread.currentThread().getName() + " has the lock");
+       } finally{
+           printLock.unlock();
+       }
     }
 
     @Override
     public void unlock() {
         int id = (int)(Thread.currentThread().getId() % 3);
-        level[id] = 0;
-        output.println(Thread.currentThread().getName() + " un-locked the lock");
+
+            if(level[id] == 3){
+                output.println(Thread.currentThread().getName() + " un-locked the lock");
+                level[id] = -1;
+            }
+
     }
 
     @Override
