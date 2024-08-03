@@ -26,67 +26,49 @@ public class Threeterson implements Lock {
 
     @Override
     public void lock() {
-       int id = (int)(Thread.currentThread().getId() % 3);
-       boolean empty = true;
+       int id = Integer.parseInt(Thread.currentThread().getName().split("-")[1]) % 3;
+
+       victim[0] = id;
+       printLock.lock();
+       try{
+           while(isThreadAtHigher(id,0)){
+               printLock.unlock();
+               try{
+                   Thread.sleep(4);
+               } catch (InterruptedException e) {
+                   Thread.currentThread().interrupt();
+               }
+               printLock.lock();
+           }
+       } finally{
+           printLock.unlock();
+       }
+
        for(int i = 1; i < 3; i++)
        {
            printLock.lock();
            try {
                output.println(Thread.currentThread().getName() + " is a victim of L" + i);
+
                victim[i] = id;
 
-               for(int k = 0; k < 3; k++){
-                   if(k == id) continue;
+               level[id] = i;
+               output.println(Thread.currentThread().getName() + " at L" + i);
 
-                   if(level[k] == i) {
-                       empty = false;
-                       break;
-                   }
+               while(isThreadAtHigher(id,i)){
+                    printLock.unlock();
+                    try{
+                        Thread.sleep(4);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    printLock.lock();
                }
-               if(empty) {
-                   level[id] = i;
-                   output.println(Thread.currentThread().getName() + " at L" + i);
-               }
+
            } finally {
                printLock.unlock();
            }
 
-           if(empty) {
-               continue;
-           }
-
-               boolean found = false;
-               do{
-                   found = false;
-                   printLock.lock();
-                   try {
-                       for (int j = 0; j < 3; j++) {
-                           if (j == id) {
-                               continue;
-                           }
-
-                               if (level[j] >= i && victim[i] == id) {
-                                   found = true;
-                                   break;
-                               }
-                           }
-                   } finally {
-                       printLock.unlock();
-                   }
-
-               } while(found);
-
-               printLock.lock();
-            try{
-               output.println(Thread.currentThread().getName() + " at L" + i);
-               level[id] = i;
-           } finally{
-               printLock.unlock();
-           }
-
-
-          /* output.println(Thread.currentThread().getName() + " at L" + i);
-           level[id] = i;*/
        }
 
        printLock.lock();
@@ -100,7 +82,7 @@ public class Threeterson implements Lock {
 
     @Override
     public void unlock() {
-        int id = (int)(Thread.currentThread().getId() % 3);
+        int id = Integer.parseInt(Thread.currentThread().getName().split("-")[1]) % 3;
 
             if(level[id] == 3){
                 output.println(Thread.currentThread().getName() + " un-locked the lock");
@@ -127,6 +109,18 @@ public class Threeterson implements Lock {
     @Override
     public Condition newCondition() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private boolean isThreadAtHigher(int id, int currlevel){
+        for(int i = 0; i < 3; i++) {
+            if(i == id){
+                continue;
+            }
+            else if(level[i] == currlevel+1 && victim[currlevel] == id){
+                return true;
+            }
+        }
+        return false;
     }
 
 }

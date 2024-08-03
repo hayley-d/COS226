@@ -30,11 +30,11 @@ public class Main {
         Threeterson lock = new Threeterson(output);
 
         Marker m1 = new Marker(lock,output,papers);
-        m1.setName("Marker 1");
+        /*m1.setName("Marker 1");*/
         Marker m2 = new Marker(lock,output,papers);
-        m2.setName("Marker 2");
+        /*m2.setName("Marker 2");*/
         Marker m3 = new Marker(lock,output,papers);
-        m3.setName("Marker 3");
+        /*m3.setName("Marker 3");*/
 
         m1.start();
         m2.start();

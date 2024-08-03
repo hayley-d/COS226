@@ -33,15 +33,6 @@ public class Marker extends Thread {
                 }else{
                     flag = false;
                 }
-                /*while(!allPapers.isEmpty()) {
-                        Paper paper = allPapers.poll();
-                        if(paper != null)
-                        {
-                            paper.mark();
-                        }else{
-                            break;
-                        }
-                }*/
             } finally {
                 lock.unlock();
             }
