@@ -25,6 +25,16 @@ public class Main {
         papers.add(new Paper());
         papers.add(new Paper());
         papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
+        papers.add(new Paper());
 
         Output output = new Output();
         Threeterson lock = new Threeterson(output);
