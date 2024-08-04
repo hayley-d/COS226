@@ -6,22 +6,24 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Threeterson implements Lock {
     private final ReentrantLock printLock;
+    private final Condition condition;
     private final Output output;
     private final int[] level;
     private final int[] victim;
-    private final boolean[] clearLevel;
+    private final boolean[] occupiedLevel;
 
     public Threeterson(Output output) {
         this.printLock = new ReentrantLock();
+        this.condition = printLock.newCondition();
         this.output = output;
-        this.level = new int[3];
-        this.victim = new int[3];
-        this.clearLevel = new boolean[3];
+        this.level = new int[4];
+        this.victim = new int[4];
+        this.occupiedLevel = new boolean[4];
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             level[i] = -1;
             victim[i] = -1;
-            clearLevel[i] = true;
+            occupiedLevel[i] = false;
         }
     }
 
@@ -29,82 +31,51 @@ public class Threeterson implements Lock {
     @Override
     public void lock() {
         int id = Integer.parseInt(Thread.currentThread().getName().split("-")[1]) % 3;
-        printLock.lock();
-        try {
-            for (int i = 1; i < 3; i++) {
-                /*printLock.lock();
-                try {*/
-                    output.println(Thread.currentThread().getName() + " is a victim of L" + i);
-                    victim[i] = id;
 
-                    /*while (isThreadAtHigher(id, i)) {
-                        printLock.unlock();
-                        try {
-                            Thread.sleep(4);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                        }
-                        printLock.lock();
-                    }*/
-                while(!clearLevel[i]) {
-                    printLock.unlock();
-                    try {
-                        Thread.sleep(4);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                    printLock.lock();
-                }
-                if(i-1 != 0)
-                {
-                    clearLevel[i-1] = true;
-                }
-                clearLevel[i] = false;
+        for (int i = 1; i < 4; i++) {
+            printLock.lock();
+            try {
                 level[id] = i;
-                output.println(Thread.currentThread().getName() + " at L" + i);
-               /* } finally {
-                    printLock.unlock();
-                }*/
+                occupiedLevel[i - 1] = false;
+                occupiedLevel[i] = true;
+                if (i != 3) {
+                    output.println(Thread.currentThread().getName() + " at L" + i);
+                    victim[i] = id;
+                    output.println(Thread.currentThread().getName() + " is a victim of L" + i);
 
-            }
-
-       /*printLock.lock();
-       try{*/
-            while(!clearLevel[0]) {
-                printLock.unlock();
-                try {
-                    Thread.sleep(4);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                    while (occupiedLevel[i + 1]) {
+                        try {
+                            condition.await(); // Wait until signaled
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt(); // Preserve interrupt status
+                        }
+                    }
+                } else {
+                    output.println(Thread.currentThread().getName() + " has the lock");
+                    break;
                 }
-                printLock.lock();
+           } finally {
+                printLock.unlock();
             }
-            clearLevel[2] = true;
-            clearLevel[0] = false;
-            level[id] = 3;
-            output.println(Thread.currentThread().getName() + " has the lock");
-        } finally {
-            printLock.unlock();
         }
+
+
     }
 
     @Override
     public void unlock() {
         int id = Integer.parseInt(Thread.currentThread().getName().split("-")[1]) % 3;
+
         printLock.lock();
         try {
             if (level[id] == 3) {
-                clearLevel[0] = true;
                 output.println(Thread.currentThread().getName() + " un-locked the lock");
+                occupiedLevel[3] = false;
                 level[id] = -1;
+                condition.signalAll();
             }
-        } finally{
+        } finally {
             printLock.unlock();
-        }
-        try {
-            Thread.sleep(7);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         }
     }
 
@@ -128,15 +99,5 @@ public class Threeterson implements Lock {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private boolean isThreadAtHigher(int id, int currlevel) {
-        for (int i = 0; i < 3; i++) {
-            if (i == id) {
-                continue;
-            } else if (level[i] >= currlevel + 1 /*|| victim[currlevel] == id*/) {
-                return true;
-            }
-        }
-        return false;
-    }
 
 }
