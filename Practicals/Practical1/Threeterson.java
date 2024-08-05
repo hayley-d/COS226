@@ -6,25 +6,27 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Threeterson implements Lock {
     private final ReentrantLock printLock;
-    private final Condition condition;
+    private final Condition[] conditions;
     private final Output output;
-    private final int[] level;
-    private final int[] victim;
-    private final boolean[] occupiedLevel;
+    private int[] level;
+    private int[] victim;
+    private boolean[] occupiedLevel;
 
     public Threeterson(Output output) {
         this.printLock = new ReentrantLock();
-        this.condition = printLock.newCondition();
+        this.conditions = new Condition[3];
         this.output = output;
-        this.level = new int[4];
-        this.victim = new int[4];
+        this.level = new int[3];
+        this.victim = new int[3];
         this.occupiedLevel = new boolean[4];
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 3; i++) {
             level[i] = -1;
             victim[i] = -1;
             occupiedLevel[i] = false;
+            conditions[i] = printLock.newCondition();
         }
+        occupiedLevel[3] = false;
     }
 
 
@@ -32,29 +34,35 @@ public class Threeterson implements Lock {
     public void lock() {
         int id = Integer.parseInt(Thread.currentThread().getName().split("-")[1]) % 3;
 
-        for (int i = 1; i < 4; i++) {
+        for (int i = 0; i < 3; i++) {
+
+            int currentLevel = i + 1;
+
             printLock.lock();
             try {
-                level[id] = i;
-                occupiedLevel[i - 1] = false;
-                occupiedLevel[i] = true;
-                if (i != 3) {
-                    output.println(Thread.currentThread().getName() + " at L" + i);
-                    victim[i] = id;
-                    output.println(Thread.currentThread().getName() + " is a victim of L" + i);
+                level[id] = currentLevel;
 
-                    while (occupiedLevel[i + 1]) {
+                if (currentLevel < 3) {
+                    output.println(Thread.currentThread().getName() + " at L" + currentLevel);
+                    victim[currentLevel] = id;
+                    output.println(Thread.currentThread().getName() + " is a victim of L" + currentLevel);
+
+                    while (moveLevel(id, currentLevel)) {
                         try {
-                            condition.await(); // Wait until signaled
+                            conditions[i].await();
                         } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt(); // Preserve interrupt status
+                            Thread.currentThread().interrupt();
                         }
                     }
+
+                    occupiedLevel[i] = false;
+                    occupiedLevel[currentLevel] = true;
                 } else {
                     output.println(Thread.currentThread().getName() + " has the lock");
                     break;
                 }
-           } finally {
+
+            } finally {
                 printLock.unlock();
             }
         }
@@ -72,7 +80,9 @@ public class Threeterson implements Lock {
                 output.println(Thread.currentThread().getName() + " un-locked the lock");
                 occupiedLevel[3] = false;
                 level[id] = -1;
-                condition.signalAll();
+                for (int i = 0; i < 3; i++) {
+                    conditions[i].signalAll();
+                }
             }
         } finally {
             printLock.unlock();
@@ -86,7 +96,11 @@ public class Threeterson implements Lock {
 
     @Override
     public boolean tryLock() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (printLock.isHeldByCurrentThread()) {
+            return false;
+        }
+        /*throw new UnsupportedOperationException("Not supported yet.");*/
+        return true;
     }
 
     @Override
@@ -97,6 +111,15 @@ public class Threeterson implements Lock {
     @Override
     public Condition newCondition() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private boolean moveLevel(int id, int currentLevel) {
+        for (int i = 0; i < 3; i++) {
+            if (i != id && level[i] >= currentLevel && victim[currentLevel] == id) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

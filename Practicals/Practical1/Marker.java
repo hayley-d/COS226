@@ -6,11 +6,13 @@ public class Marker extends Thread {
     private final Lock lock;
     private final Output output;
     private final Queue<Paper> allPapers;
+    private boolean locked;
 
     public Marker(Threeterson lock, Output output, Queue<Paper> allPapers) {
         this.lock = lock;
         this.output = output;
         this.allPapers = allPapers;
+        this.locked = false;
     }
 
     @Override
@@ -32,13 +34,9 @@ public class Marker extends Thread {
                 }
             } finally {
                 lock.unlock();
-                try {
-                    Thread.sleep(2);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
             }
         }
+
 
     }
 
