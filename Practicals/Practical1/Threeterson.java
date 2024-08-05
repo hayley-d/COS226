@@ -34,15 +34,23 @@ public class Threeterson implements Lock {
     public void lock() {
         int id = Integer.parseInt(Thread.currentThread().getName().split("-")[1]) % 3;
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
 
-            int currentLevel = i + 1;
+            int currentLevel = i;
 
             printLock.lock();
             try {
                 level[id] = currentLevel;
-
-                if (currentLevel < 3) {
+                if(currentLevel == 0){
+                    while (moveLevel(id, currentLevel)) {
+                        try {
+                            conditions[i].await();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                }
+                else if (currentLevel < 3 && currentLevel > 0) {
                     output.println(Thread.currentThread().getName() + " at L" + currentLevel);
                     victim[currentLevel] = id;
                     output.println(Thread.currentThread().getName() + " is a victim of L" + currentLevel);
@@ -55,7 +63,7 @@ public class Threeterson implements Lock {
                         }
                     }
 
-                    occupiedLevel[i] = false;
+                    occupiedLevel[i-1] = false;
                     occupiedLevel[currentLevel] = true;
                 } else {
                     output.println(Thread.currentThread().getName() + " has the lock");
