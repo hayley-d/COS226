@@ -10,6 +10,7 @@ public class ExecutionOrderChecker {
 
         //some code here
         Vector<Vector<MethodCall>> groupedThreadCalls = new Vector<>();
+
         for(MethodCall operation : operations){
             boolean inVector = false;
             for(Vector<MethodCall> group : groupedThreadCalls){
@@ -26,55 +27,39 @@ public class ExecutionOrderChecker {
                 groupedThreadCalls.add(newGroup);
             }
         }
+        Vector<MethodCall> ops = new Vector<>(operations);
+        Vector<Vector<MethodCall>> groupPermutations = new Vector<>();
+        generatePermutation(ops,ops.size(),groupPermutations);
+        //List<List<MethodCall>> groupPermutationsList = new ArrayList<>();
 
-        Vector<Vector<MethodCall>> permutations = new Vector<>();
-
-        if(!groupedThreadCalls.isEmpty()){
-            generatePermutation(groupedThreadCalls.getFirst(),groupedThreadCalls.getFirst().size(),permutations);
-
-            /*System.out.println(permutations);
-            for(Vector<MethodCall> permutation : permutations){
-
-                permutation.addAll(groupedThreadCalls.get(1));
+        for(Vector<MethodCall> permutation : groupPermutations){
+            if(isValidCallOrder(permutation) && isValidOrder(permutation) && isValidOperations(permutation)){
                 System.out.println(permutation);
-                System.out.println(isValidOrder(permutation));
-                for(MethodCall operation : permutation){
-                    System.out.println(extractValue(operation));
-                }
-            }*/
+            }
+        }
 
-            /*for(Vector<MethodCall> permutation : permutations){
-                Map<String,Integer> my_map = new HashMap<>();
-                int index = 0;
-                for(MethodCall operation : permutation){
-                    my_map.put(operation.threadId,index);
-                    ++index;
-                }
-                //System.out.println(map);
-                Vector<MethodCall> other = new Vector<>();
-                int groupNumber = 1;
-                for(int i = 1; i < groupedThreadCalls.size(); i++){
-                    Vector<MethodCall> group = groupedThreadCalls.get(i);
-                    if(group!= null){
-                        Vector<MethodCall> sortedGroup = new Vector<>(group);
-                        sortedGroup.sort(Comparator.comparingInt(p -> my_map.get(p.threadId)));
 
-                        other.addAll(sortedGroup.reversed());
+        /*if(!groupedThreadCalls.isEmpty()){
+            for(Vector<MethodCall> group : groupedThreadCalls){
+                Vector<Vector<MethodCall>> permutations = new Vector<>();
+                generatePermutation(group,group.size(),permutations);
+                groupPermutations.add(permutations);
+            }
+
+            for(Vector<MethodCall> permutation : groupPermutations.get(1)){
+                for(int i = 1; i < groupPermutations.size();++i){
+                    for(int j = 0; j < groupPermutations.get(i).size();++j){
+
                     }
                 }
-                Vector<MethodCall> combined = new Vector<>(permutation);
-                combined.addAll(other);
+            }
+            for(int i = 1; i < groupPermutations.size(); ++i){
 
-                System.out.println(combined);
-            }*/
-            /*for(MethodCall firstCall : groupedThreadCalls.getFirst()){
-                int totalThreads = groupedThreadCalls.getFirst().size();
-                int numberOfLists = factorial(totalThreads-1);
+                for()
+            }
 
-                Vector<Vector<MethodCall>> currentPermutation = new Vector<>();
 
-            }*/
-        }
+        }*/
 
 
 
@@ -162,6 +147,12 @@ public class ExecutionOrderChecker {
                 }
             }
         }
+        return true;
+    }
+
+    private static boolean isValidCallOrder(Vector<MethodCall> calls){
+
+         
         return true;
     }
 
