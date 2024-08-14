@@ -7,15 +7,23 @@ public class Main {
                 new MethodCall("A", 1, "enq(x)"),
                 new MethodCall("A", 2, "enq(y)"),
                 new MethodCall("B", 1, "deq(x)"),
-                new MethodCall("B", 2, "deq(y)")
+                new MethodCall("B", 2, "deq(y)"),
+                new MethodCall("A", 3, "enq(x)"),
+                new MethodCall("A", 4, "enq(y)"),
+                new MethodCall("B", 3, "deq(x)"),
+                new MethodCall("B", 4, "deq(y)"),
+                new MethodCall("C", 1, "enq(p)"),
+                new MethodCall("C", 2, "enq(l)"),
+                new MethodCall("D", 1, "deq(p)"),
+                new MethodCall("D", 2, "deq(l)")
         );
 
         List<List<MethodCall>> possibleOrders = ExecutionOrderChecker.findPossibleOrders(operations);
 
         
-        for (List<MethodCall> order : possibleOrders) {
+        /*for (List<MethodCall> order : possibleOrders) {
             System.out.println(order);
-        }
+        }*/
         /*
          * Should print:
          * [(A,1,enq(x)), (B,1,deq(x)), (A,2,enq(y)), (B,2,deq(y))]
