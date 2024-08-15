@@ -122,13 +122,13 @@ public class ExecutionOrderChecker {
         Queue<String> queue = new LinkedList<>();
 
         for(MethodCall call : threadCalls){
-            if(isEnqueue(call)){
+            if(call.action.startsWith("enq")){
                 queue.add(extractValue(call));
             }else{
                 //check if char is on the queue
-                if(queue.peek()!=null && queue.peek().equals(extractValue(call))){
+                if(queue.peek()!=null && queue.contains(extractValue(call))){
                     //valid
-                    queue.poll();
+                    queue.remove(extractValue(call));
                 }else{
                    //System.out.println(BLUE + threadCalls + RESET);
                     return false;
@@ -136,12 +136,6 @@ public class ExecutionOrderChecker {
             }
         }
         return true;
-    }
-
-
-
-    private static boolean isEnqueue(MethodCall call){
-        return call.action.startsWith("enq");
     }
 
     private static String extractValue(MethodCall call){
