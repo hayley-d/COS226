@@ -6,20 +6,22 @@ public class ExecutionOrderChecker {
     public static final String BLUE = "\u001B[34m";
     public static final String RESET = "\u001B[0m";
 
+    public static final List<List<MethodCall>> possibleOrders = new ArrayList<>();
+
     // Returns a list of all possible orders in which the operations can be executed to satisfy the sequential consistency constraints
     public static List<List<MethodCall>> findPossibleOrders(List<MethodCall> operations)
     {
-        List<List<MethodCall>> possibleOrders = new ArrayList<>();
+        possibleOrders.clear();
         if(operations== null || operations.isEmpty()) return possibleOrders;
         //check if valid
 
         //some code here
-        Vector<Vector<MethodCall>> groupedThreadCalls = new Vector<>();
+        ArrayList<ArrayList<MethodCall>> groupedThreadCalls = new ArrayList<>();
 
         for(MethodCall operation : operations){
             boolean inVector = false;
-            for(Vector<MethodCall> group : groupedThreadCalls){
-                if(group.elementAt(0).orderInThread == operation.orderInThread){
+            for(ArrayList<MethodCall> group : groupedThreadCalls){
+                if(group.get(0).orderInThread == operation.orderInThread){
                     inVector = true;
                     group.add(operation);
                     break;
@@ -27,35 +29,37 @@ public class ExecutionOrderChecker {
             }
 
             if(!inVector){
-                Vector<MethodCall> newGroup = new Vector<>();
+                /*ArrayList<MethodCall> newGroup = new Vector<>();
                 newGroup.add(operation);
-                groupedThreadCalls.add(newGroup);
+                groupedThreadCalls.add(newGroup);*/
+                groupedThreadCalls.add(new ArrayList<>(Collections.singletonList(operation)));
             }
         }
 
         boolean continueCalculation = true;
-        for(Vector<MethodCall> group : groupedThreadCalls){
+        for(ArrayList<MethodCall> group : groupedThreadCalls){
             if(!isCorrectOrder(group)) continueCalculation = false;
         }
 
         if(continueCalculation){
-            Vector<Vector<Vector<MethodCall>>> allPermutations = new Vector<>();
+            ArrayList<ArrayList<ArrayList<MethodCall>>> allPermutations = new ArrayList<>();
 
-            for(Vector<MethodCall> group : groupedThreadCalls){
+            for(ArrayList<MethodCall> group : groupedThreadCalls){
                 //generate permutation
-                Vector<Vector<MethodCall>> groupPermutations = new Vector<>();
+                ArrayList<ArrayList<MethodCall>> groupPermutations = new ArrayList<>();
                 generatePermutation(group,group.size(),groupPermutations);
                 allPermutations.add(groupPermutations);
             }
 
-            Vector<Vector<MethodCall>> merged = mergePermutations(allPermutations);
+            //mergePermutations(allPermutations);
+            generateMergePermutations(allPermutations, 0, new ArrayList<MethodCall>());
 
-            for(Vector<MethodCall> permutation : merged){
+            /*for(Vector<MethodCall> permutation : merged){
 
                 if(isValidCallOrder(permutation)){
                     possibleOrders.add(permutation);
                 }
-            }
+            }*/
         }
 
 
@@ -71,31 +75,35 @@ public class ExecutionOrderChecker {
         return result;
     }*/
 
-    public static Vector<Vector<MethodCall>> mergePermutations(Vector<Vector<Vector<MethodCall>>> groupedPermutations) {
-        Vector<Vector<MethodCall>> result = new Vector<>();
+    /*public static void mergePermutations(Vector<Vector<Vector<MethodCall>>> groupedPermutations) {
         Vector<MethodCall> current = new Vector<>();
+        generateMergePermutations(groupedPermutations, 0, current);
+        //System.out.println(RED+ possibleOrders+ RESET);
+    }*/
 
-        generateMergePermutations(groupedPermutations, 0, current, result);
-
-        return result;
-    }
-
-    private static void generateMergePermutations(Vector<Vector<Vector<MethodCall>>> groupedPermutations, int level, Vector<MethodCall> current, Vector<Vector<MethodCall>> result) {
+    private static void generateMergePermutations(ArrayList<ArrayList<ArrayList<MethodCall>>> groupedPermutations, int level, ArrayList<MethodCall> current) {
         if (level == groupedPermutations.size()) {
-            result.add(new Vector<>(current));
+            process(current);
             return;
         }
 
-        for (Vector<MethodCall> permutation : groupedPermutations.get(level)) {
+        for (ArrayList<MethodCall> permutation : groupedPermutations.get(level)) {
             current.addAll(permutation);
-            generateMergePermutations(groupedPermutations, level + 1, current, result);
+            generateMergePermutations(groupedPermutations, level + 1, current);
             current.subList(current.size() - permutation.size(), current.size()).clear();
         }
     }
 
-    private static void generatePermutation(Vector<MethodCall> list, int size, Vector<Vector<MethodCall>> result){
+    private static void process(ArrayList<MethodCall> permutation){
+        //System.out.println(permutation);
+       if(isValidOrder(permutation) && isValidOperations(permutation)) {
+           possibleOrders.add(new ArrayList<MethodCall>(permutation));
+       }
+    }
+
+    private static void generatePermutation(ArrayList<MethodCall> list, int size, ArrayList<ArrayList<MethodCall>> result){
         if(size == 1){
-            result.addElement(new Vector<>(list));
+            result.add(new ArrayList<>(list));
         } else{
            int index = 0;
            while(index < size){
@@ -110,7 +118,7 @@ public class ExecutionOrderChecker {
         }
     }
 
-    private static boolean isValidOperations(Vector<MethodCall> threadCalls){
+    private static boolean isValidOperations(ArrayList<MethodCall> threadCalls){
         Queue<String> queue = new LinkedList<>();
 
         for(MethodCall call : threadCalls){
@@ -122,7 +130,7 @@ public class ExecutionOrderChecker {
                     //valid
                     queue.poll();
                 }else{
-                    //System.out.println(BLUE + threadCalls + RESET);
+                   //System.out.println(BLUE + threadCalls + RESET);
                     return false;
                 }
             }
@@ -148,7 +156,7 @@ public class ExecutionOrderChecker {
         return "";
     }
 
-    private static boolean isValidOrder(Vector<MethodCall> threadCalls){
+    private static boolean isValidOrder(ArrayList<MethodCall> threadCalls){
         Stack<String> stack = new Stack<>();
         for(MethodCall call : threadCalls){
             if(stack.isEmpty() || !stack.contains(call.threadId)){
@@ -170,34 +178,11 @@ public class ExecutionOrderChecker {
         return true;
     }
 
-    private static boolean isValidCallOrder(Vector<MethodCall> calls){
-        if(!isValidOrder(calls)) return false;
-        if(!isValidOperations(calls)) return false;
-
-        /*Map<String,Integer> map = new HashMap<>();
-        for(MethodCall call : calls){
-            int order = map.getOrDefault(call.threadId,-1);
-
-            if(order == -1){
-                map.put(call.threadId, call.orderInThread);
-            }else{
-                if(call.orderInThread <= order){
-                    return false;
-                }else{
-                    map.put(call.threadId, call.orderInThread);
-                }
-            }
-        }*/
-         
-        return true;
-    }
-
-    private static boolean isCorrectOrder(Vector<MethodCall> calls){
+    private static boolean isCorrectOrder(ArrayList<MethodCall> calls){
         for(int i = 0; i < calls.size(); ++i){
-            String name = calls.elementAt(i).threadId;
             for(int j = i+1; j < calls.size(); ++j){
-                if(calls.elementAt(j).threadId.equals(name)){
-                    System.out.println(calls.elementAt(j));
+                if(calls.get(j).threadId.equals(calls.get(i).threadId)){
+                    //System.out.println(calls.get(j));
                     return false;
                 }
             }
