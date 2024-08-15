@@ -16,7 +16,7 @@ public class ExecutionOrderChecker {
         //check if valid
 
         //some code here
-        ArrayList<ArrayList<MethodCall>> groupedThreadCalls = new ArrayList<>();
+        /*ArrayList<ArrayList<MethodCall>> groupedThreadCalls = new ArrayList<>();
 
         for(MethodCall operation : operations){
             boolean inVector = false;
@@ -29,19 +29,26 @@ public class ExecutionOrderChecker {
             }
 
             if(!inVector){
-                /*ArrayList<MethodCall> newGroup = new Vector<>();
+                *//*ArrayList<MethodCall> newGroup = new Vector<>();
                 newGroup.add(operation);
-                groupedThreadCalls.add(newGroup);*/
+                groupedThreadCalls.add(newGroup);*//*
                 groupedThreadCalls.add(new ArrayList<>(Collections.singletonList(operation)));
             }
-        }
-
+        }*/
+        //If each thread's order is correct
         boolean continueCalculation = true;
-        for(ArrayList<MethodCall> group : groupedThreadCalls){
-            if(!isCorrectOrder(group)) continueCalculation = false;
+        ArrayList<ArrayList<MethodCall>> groupedThreadCalls = new ArrayList<>();
+        generatePermutation(new ArrayList<>(operations), operations.size(), groupedThreadCalls);
+        for(ArrayList<MethodCall> threadCalls : groupedThreadCalls){
+            if(checkOrder(threadCalls) && isValidOperations(threadCalls)){
+                possibleOrders.add(new ArrayList<MethodCall>(threadCalls));
+            }
         }
+        /*for(ArrayList<MethodCall> group : groupedThreadCalls){
+            if(!isCorrectOrder(group)) continueCalculation = false;
+        }*/
 
-        if(continueCalculation){
+        /*if(continueCalculation){
             ArrayList<ArrayList<ArrayList<MethodCall>>> allPermutations = new ArrayList<>();
 
             for(ArrayList<MethodCall> group : groupedThreadCalls){
@@ -54,13 +61,13 @@ public class ExecutionOrderChecker {
             //mergePermutations(allPermutations);
             generateMergePermutations(allPermutations, 0, new ArrayList<MethodCall>());
 
-            /*for(Vector<MethodCall> permutation : merged){
+            *//*for(Vector<MethodCall> permutation : merged){
 
                 if(isValidCallOrder(permutation)){
                     possibleOrders.add(permutation);
                 }
-            }*/
-        }
+            }*//*
+        }*/
 
 
 
@@ -96,14 +103,16 @@ public class ExecutionOrderChecker {
 
     private static void process(ArrayList<MethodCall> permutation){
         //System.out.println(permutation);
-       if(isValidOrder(permutation) && isValidOperations(permutation)) {
+       if(/*isValidOrder(permutation) &&*/ isValidOperations(permutation)) {
            possibleOrders.add(new ArrayList<MethodCall>(permutation));
        }
     }
 
     private static void generatePermutation(ArrayList<MethodCall> list, int size, ArrayList<ArrayList<MethodCall>> result){
         if(size == 1){
-            result.add(new ArrayList<>(list));
+            if(isValidOperations(list) && checkOrder(list)){
+                result.add(new ArrayList<>(list));
+            }
         } else{
            int index = 0;
            while(index < size){
@@ -123,10 +132,13 @@ public class ExecutionOrderChecker {
 
         for(MethodCall call : threadCalls){
             if(call.action.startsWith("enq")){
+                if(queue.contains(extractValue(call))){
+                    return false;
+                }
                 queue.add(extractValue(call));
             }else{
                 //check if char is on the queue
-                if(queue.peek()!=null && queue.contains(extractValue(call))){
+                if(queue.peek()!=null && queue.peek().equals(extractValue(call))){
                     //valid
                     queue.remove(extractValue(call));
                 }else{
@@ -172,6 +184,9 @@ public class ExecutionOrderChecker {
         return true;
     }
 
+    /*
+    * Checks to see that no duplicate orders are made
+    * */
     private static boolean isCorrectOrder(ArrayList<MethodCall> calls){
         for(int i = 0; i < calls.size(); ++i){
             for(int j = i+1; j < calls.size(); ++j){
@@ -184,5 +199,29 @@ public class ExecutionOrderChecker {
         return true;
     }
 
+    /*
+    *checks that the order of calls for a given thread is correct
+    *
+    * */
+    private static boolean checkOrder(ArrayList<MethodCall> calls){
+        //first check ascending order
+        for(int i = 0; i < calls.size(); ++i){
+            int order = calls.get(i).orderInThread;
+            for(int j = i+1; j < calls.size(); ++j){
+                if(calls.get(j).threadId.equals(calls.get(i).threadId)){
+                    ++order;
+                   if(calls.get(j).orderInThread <= calls.get(i).orderInThread){
+                       return false;
+                   }
+                   if(calls.get(j).orderInThread != order){
+                       return false;
+                   }
+                }
+            }
+        }
+        //check strict n+1 order
+
+        return true;
+    }
 }
 
