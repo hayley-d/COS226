@@ -10,6 +10,7 @@ public class ExecutionOrderChecker {
     public static List<List<MethodCall>> findPossibleOrders(List<MethodCall> operations)
     {
         List<List<MethodCall>> possibleOrders = new ArrayList<>();
+        if(operations== null || operations.isEmpty()) return possibleOrders;
         //check if valid
 
         //some code here
@@ -18,7 +19,7 @@ public class ExecutionOrderChecker {
         for(MethodCall operation : operations){
             boolean inVector = false;
             for(Vector<MethodCall> group : groupedThreadCalls){
-                if(group.getFirst().orderInThread == operation.orderInThread){
+                if(group.elementAt(0).orderInThread == operation.orderInThread){
                     inVector = true;
                     group.add(operation);
                     break;
@@ -32,55 +33,33 @@ public class ExecutionOrderChecker {
             }
         }
 
-        Vector<Vector<Vector<MethodCall>>> allPermutations = new Vector<>();
-
+        boolean continueCalculation = true;
         for(Vector<MethodCall> group : groupedThreadCalls){
-            //generate permutation
-            Vector<Vector<MethodCall>> groupPermutations = new Vector<>();
-            generatePermutation(group,group.size(),groupPermutations);
-            allPermutations.add(groupPermutations);
+            if(!isCorrectOrder(group)) continueCalculation = false;
         }
 
-        Vector<Vector<MethodCall>> merged = mergePermutations(allPermutations);
-        //Vector<MethodCall> ops = new Vector<>(operations);
-        //Vector<Vector<MethodCall>> groupPermutations = new Vector<>();
-        //generatePermutation(ops,ops.size(),groupPermutations);
-        //List<List<MethodCall>> groupPermutationsList = new ArrayList<>();
+        if(continueCalculation){
+            Vector<Vector<Vector<MethodCall>>> allPermutations = new Vector<>();
 
-        for(Vector<MethodCall> permutation : merged){
-            //System.out.println(permutation);
-            if(isValidCallOrder(permutation)/* && isValidOrder(permutation) && isValidOperations(permutation)*/){
-                //System.out.println(permutation);
-                possibleOrders.add(permutation);
-            }
-        }
-
-
-        /*if(!groupedThreadCalls.isEmpty()){
             for(Vector<MethodCall> group : groupedThreadCalls){
-                Vector<Vector<MethodCall>> permutations = new Vector<>();
-                generatePermutation(group,group.size(),permutations);
-                groupPermutations.add(permutations);
+                //generate permutation
+                Vector<Vector<MethodCall>> groupPermutations = new Vector<>();
+                generatePermutation(group,group.size(),groupPermutations);
+                allPermutations.add(groupPermutations);
             }
 
-            for(Vector<MethodCall> permutation : groupPermutations.get(1)){
-                for(int i = 1; i < groupPermutations.size();++i){
-                    for(int j = 0; j < groupPermutations.get(i).size();++j){
+            Vector<Vector<MethodCall>> merged = mergePermutations(allPermutations);
 
-                    }
+            for(Vector<MethodCall> permutation : merged){
+
+                if(isValidCallOrder(permutation)){
+                    possibleOrders.add(permutation);
                 }
             }
-            for(int i = 1; i < groupPermutations.size(); ++i){
-
-                for()
-            }
-
-
-        }*/
+        }
 
 
 
-        //System.out.println(groupedThreadCalls.toString());
         return possibleOrders;
     }
 
@@ -110,7 +89,6 @@ public class ExecutionOrderChecker {
         for (Vector<MethodCall> permutation : groupedPermutations.get(level)) {
             current.addAll(permutation);
             generateMergePermutations(groupedPermutations, level + 1, current, result);
-            // Backtrack to try the next permutation
             current.subList(current.size() - permutation.size(), current.size()).clear();
         }
     }
@@ -211,6 +189,19 @@ public class ExecutionOrderChecker {
             }
         }*/
          
+        return true;
+    }
+
+    private static boolean isCorrectOrder(Vector<MethodCall> calls){
+        for(int i = 0; i < calls.size(); ++i){
+            String name = calls.elementAt(i).threadId;
+            for(int j = i+1; j < calls.size(); ++j){
+                if(calls.elementAt(j).threadId.equals(name)){
+                    System.out.println(calls.elementAt(j));
+                    return false;
+                }
+            }
+        }
         return true;
     }
 
