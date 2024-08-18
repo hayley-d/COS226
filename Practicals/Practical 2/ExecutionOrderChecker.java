@@ -11,82 +11,25 @@ public class ExecutionOrderChecker {
     // Returns a list of all possible orders in which the operations can be executed to satisfy the sequential consistency constraints
     public static List<List<MethodCall>> findPossibleOrders(List<MethodCall> operations)
     {
+        //clear the list - just in case
         possibleOrders.clear();
+        
+        //check if the input list is empty/null
         if(operations== null || operations.isEmpty()) return possibleOrders;
-        //check if valid
-
-        //some code here
-        /*ArrayList<ArrayList<MethodCall>> groupedThreadCalls = new ArrayList<>();
-
-        for(MethodCall operation : operations){
-            boolean inVector = false;
-            for(ArrayList<MethodCall> group : groupedThreadCalls){
-                if(group.get(0).orderInThread == operation.orderInThread){
-                    inVector = true;
-                    group.add(operation);
-                    break;
-                }
-            }
-
-            if(!inVector){
-                *//*ArrayList<MethodCall> newGroup = new Vector<>();
-                newGroup.add(operation);
-                groupedThreadCalls.add(newGroup);*//*
-                groupedThreadCalls.add(new ArrayList<>(Collections.singletonList(operation)));
-            }
-        }*/
-        //If each thread's order is correct
-        boolean continueCalculation = true;
+    
+        //create list to hold permutations 
         ArrayList<ArrayList<MethodCall>> groupedThreadCalls = new ArrayList<>();
         generatePermutation(new ArrayList<>(operations), operations.size(), groupedThreadCalls);
+
+        //for each permutation check if it is valid
         for(ArrayList<MethodCall> threadCalls : groupedThreadCalls){
             if(checkOrder(threadCalls) && isValidOperations(threadCalls)){
                 possibleOrders.add(new ArrayList<MethodCall>(threadCalls));
             }
         }
-        /*for(ArrayList<MethodCall> group : groupedThreadCalls){
-            if(!isCorrectOrder(group)) continueCalculation = false;
-        }*/
-
-        /*if(continueCalculation){
-            ArrayList<ArrayList<ArrayList<MethodCall>>> allPermutations = new ArrayList<>();
-
-            for(ArrayList<MethodCall> group : groupedThreadCalls){
-                //generate permutation
-                ArrayList<ArrayList<MethodCall>> groupPermutations = new ArrayList<>();
-                generatePermutation(group,group.size(),groupPermutations);
-                allPermutations.add(groupPermutations);
-            }
-
-            //mergePermutations(allPermutations);
-            generateMergePermutations(allPermutations, 0, new ArrayList<MethodCall>());
-
-            *//*for(Vector<MethodCall> permutation : merged){
-
-                if(isValidCallOrder(permutation)){
-                    possibleOrders.add(permutation);
-                }
-            }*//*
-        }*/
-
-
 
         return possibleOrders;
     }
-
-    /*private static int factorial(int n){
-        int result = 1;
-        for(int i = 2; i <= n; i++){
-            result *= i;
-        }
-        return result;
-    }*/
-
-    /*public static void mergePermutations(Vector<Vector<Vector<MethodCall>>> groupedPermutations) {
-        Vector<MethodCall> current = new Vector<>();
-        generateMergePermutations(groupedPermutations, 0, current);
-        //System.out.println(RED+ possibleOrders+ RESET);
-    }*/
 
     private static void generateMergePermutations(ArrayList<ArrayList<ArrayList<MethodCall>>> groupedPermutations, int level, ArrayList<MethodCall> current) {
         if (level == groupedPermutations.size()) {
@@ -110,8 +53,8 @@ public class ExecutionOrderChecker {
 
     private static void generatePermutation(ArrayList<MethodCall> list, int size, ArrayList<ArrayList<MethodCall>> result){
         if(size == 1){
-            if(isValidOperations(list) && checkOrder(list)){
-                result.add(new ArrayList<>(list));
+            if(checkOrder(list) && isValidOperations(list)){
+              result.add(new ArrayList<>(list));
             }
         } else{
            int index = 0;
