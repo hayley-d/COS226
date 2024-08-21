@@ -20,10 +20,12 @@ public class Register {
         List<List<Integer>> possibleValues = new ArrayList<>();
 
         if(!isOverlaps()){
+
             if(writes.size() != 0 && reads.size() != 0){
                 int lastWriteEnd = writes.get(writes.size()-1).endTime;
                 int firstWriteStart = writes.get(0).startTime;
                 int firstWriteEnd = writes.get(0).endTime;
+
                 for(int i = 0; i < reads.size();++i){
                     possibleValues.add(new ArrayList<Integer>());
                     int start = reads.get(i).startTime;
@@ -40,8 +42,11 @@ public class Register {
                                 //create possible value
                                 //if(writeStart > end) continue;
                                 possibleValues.get(i).add(writes.get(j).value);
-                            } else {
-                                //no overlap
+                            } 
+                        }
+                        
+                        if(possibleValues.get(i).size() == 0){
+                          //no overlap
                                 RegisterOperation lastWrite = null;
                                 for(RegisterOperation write : writes){
                                     if(write.endTime <= start){
@@ -50,12 +55,12 @@ public class Register {
                                 }
                                 if(lastWrite != null)
                                   possibleValues.get(i).add(lastWrite.value);
-                            }
                         }
                     } else{
                         //starts after all writes have finished
                         possibleValues.get(i).add(writes.get(writes.size()-1).value);
                     }
+                    System.out.println(possibleValues.get(i));
                 }
 /*                Integer currentRegisterValue = null;
                 int currentWriteStart = -1;
@@ -67,9 +72,9 @@ public class Register {
                     }
                 }*/
 
-               for(List<Integer> list : possibleValues){
+/*               for(List<Integer> list : possibleValues){
                     System.out.println(list);
-                }
+                }*/
                 generatePermutations(possibleValues,results);
           } else if(writes.size() == 0){
                 //no writes
@@ -79,9 +84,9 @@ public class Register {
                 }
                 generatePermutations(possibleValues,results);
           }
-            for(List<Integer> list : results){
+/*            for(List<Integer> list : results){
                 System.out.println(list);
-            }
+            }*/
         }
 
         return results;
