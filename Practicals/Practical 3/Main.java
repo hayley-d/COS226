@@ -54,10 +54,6 @@ public class Main {
         register.read(8, 9);
         register.read(12, 13);
 
-        System.out.println("Original List: ");
-        for(RegisterOperation operation : register.operations){
-            System.out.println(operation);
-        }
         List<List<Integer>> validReads = register.getValidReadValues();
 
         System.out.println("Test: Two writes and four reads:");
@@ -106,6 +102,10 @@ public class Main {
         register.write(13, 14, 15); // W(13)
         register.read(16, 17); // R³
         register.read(18, 19); // R⁴
+        System.out.println("Original List: ");
+        for(RegisterOperation operation : register.operations){
+            System.out.println(operation);
+        }
 
         List<List<Integer>> validReads = register.getValidReadValues();
 

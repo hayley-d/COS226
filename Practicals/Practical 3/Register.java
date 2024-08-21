@@ -21,20 +21,51 @@ public class Register {
 
         if(!isOverlaps()){
             if(writes.size() != 0 && reads.size() != 0){
+                int lastWriteEnd = writes.get(writes.size()-1).endTime;
+                int firstWriteStart = writes.get(0).startTime;
+                int firstWriteEnd = writes.get(0).endTime;
                 for(int i = 0; i < reads.size();++i){
                     possibleValues.add(new ArrayList<Integer>());
                     int start = reads.get(i).startTime;
                     int end = reads.get(i).endTime;
-                    for(int j = 0; j < writes.size(); ++j){
-                        int writeStart = writes.get(j).startTime;
-                        int writeEnd = writes.get(j).endTime;
-                        if((start <= writeStart && end > writeStart) || (start <= writeStart && end <= writeEnd) ||(start > writeStart && start <= writeEnd)){
-                            //create possible value
-                            if(writeStart > end) continue;
-                            possibleValues.get(i).add(writes.get(j).value);
+                    if(end < firstWriteStart){
+                        //start before any writes
+                        possibleValues.get(i).add(null);
+                    }
+                    else if(start < lastWriteEnd){
+                        for(int j = 0; j < writes.size(); ++j){
+                            int writeStart = writes.get(j).startTime;
+                            int writeEnd = writes.get(j).endTime;
+                            if((start <= writeStart && end <= writeEnd && end > writeStart) || (start <= writeStart && end > writeEnd) ||(start >= writeStart && end <= writeEnd) || (start >= writeStart && end > writeEnd && start < writeEnd)){
+                                //create possible value
+                                //if(writeStart > end) continue;
+                                possibleValues.get(i).add(writes.get(j).value);
+                            } else {
+                                //no overlap
+                                RegisterOperation lastWrite = null;
+                                for(RegisterOperation write : writes){
+                                    if(write.endTime <= start){
+                                        lastWrite = write;
+                                    }
+                                }
+                                if(lastWrite != null)
+                                  possibleValues.get(i).add(lastWrite.value);
+                            }
                         }
+                    } else{
+                        //starts after all writes have finished
+                        possibleValues.get(i).add(writes.get(writes.size()-1).value);
                     }
                 }
+/*                Integer currentRegisterValue = null;
+                int currentWriteStart = -1;
+                int currentWriteEnd = -1;
+                for(RegisterOperation op : operations){
+                    if(op.type == RegisterOperation.Type.WRITE){
+                        currentWriteStart = op.startTime;
+                        currentWriteEnd = op.endTime;
+                    }
+                }*/
 
                for(List<Integer> list : possibleValues){
                     System.out.println(list);
