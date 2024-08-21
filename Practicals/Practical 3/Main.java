@@ -55,7 +55,9 @@ public class Main {
         register.read(12, 13);
 
         List<List<Integer>> validReads = register.getValidReadValues();
-
+        for(List<Integer> list : validReads){
+            System.out.println(list);
+        }
         System.out.println("Test: Two writes and four reads:");
 
     }
@@ -68,7 +70,9 @@ public class Main {
        register.read(7, 8); // R²
 
         List<List<Integer>> validReads = register.getValidReadValues();
-
+        for(List<Integer> list : validReads){
+            System.out.println(list);
+        }
         //System.out.println("Test: Back to back writes:" + (memoValidReads.containsAll(validReads)
                 //&& memoValidReads.size() == validReads.size()));
 
@@ -88,7 +92,9 @@ public class Main {
         m.read(8, 9); // R³
 */
         List<List<Integer>> validReads = register.getValidReadValues();
-
+        for(List<Integer> list : validReads){
+            System.out.println(list);
+        }
         System.out.println("Test: One Write Non-Overlapping Reads:");
 
     }
@@ -102,13 +108,11 @@ public class Main {
         register.write(13, 14, 15); // W(13)
         register.read(16, 17); // R³
         register.read(18, 19); // R⁴
-        System.out.println("Original List: ");
-        for(RegisterOperation operation : register.operations){
-            System.out.println(operation);
-        }
 
         List<List<Integer>> validReads = register.getValidReadValues();
-
+        for(List<Integer> list : validReads){
+            System.out.println(list);
+        }
  /*       System.out.println("Test: Long sequence without overlaps:" + (memoValidReads.containsAll(validReads)
                 && memoValidReads.size() == validReads.size()));*/
 
@@ -121,7 +125,9 @@ public class Main {
         register.read(4, 5); // R³
 
         List<List<Integer>> validReads = register.getValidReadValues();
-
+        for(List<Integer> list : validReads){
+            System.out.println(list);
+        }
         System.out.println("Test: No Writes Scenario:");
 
     }
@@ -134,7 +140,9 @@ public class Main {
         register.read(9, 10); // R¹
 
         List<List<Integer>> validReads = register.getValidReadValues();
-
+        for(List<Integer> list : validReads){
+            System.out.println(list);
+        }
         System.out.println("Test: Multiple Consecutive Writes:");
 
     }
@@ -147,7 +155,9 @@ public class Main {
         register.read(4, 6); // R²
 
         List<List<Integer>> validReads = register.getValidReadValues();
-
+        for(List<Integer> list : validReads){
+            System.out.println(list);
+        }
         System.out.println("Test: Read Overlapping Multiple Writes:");
 
     }
@@ -159,9 +169,15 @@ public class Main {
         register.write(3, 6, 8); // W(3)
         register.read(9, 10); // R¹
         register.read(11, 12); // R²
+/*        System.out.println("Original List: ");
+        for(RegisterOperation operation : register.operations){
+            System.out.println(operation);
+        }*/
 
         List<List<Integer>> validReads = register.getValidReadValues();
-
+        for(List<Integer> list : validReads){
+            System.out.println(list);
+        }
         System.out.println("Test: Reads After All Writes:");
     }
 

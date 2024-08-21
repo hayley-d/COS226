@@ -35,6 +35,16 @@ public class Register {
                         possibleValues.get(i).add(null);
                     }
                     else if(start < lastWriteEnd){
+
+                        RegisterOperation lastWrite = null;
+                        for(RegisterOperation write : writes){
+                           if(write.endTime <= start){
+                               lastWrite = write;
+                           }
+                        }
+                        if(lastWrite != null)
+                           possibleValues.get(i).add(lastWrite.value);
+ 
                         for(int j = 0; j < writes.size(); ++j){
                             int writeStart = writes.get(j).startTime;
                             int writeEnd = writes.get(j).endTime;
@@ -47,20 +57,12 @@ public class Register {
                         
                         if(possibleValues.get(i).size() == 0){
                           //no overlap
-                                RegisterOperation lastWrite = null;
-                                for(RegisterOperation write : writes){
-                                    if(write.endTime <= start){
-                                        lastWrite = write;
-                                    }
-                                }
-                                if(lastWrite != null)
-                                  possibleValues.get(i).add(lastWrite.value);
-                        }
+                       }
                     } else{
                         //starts after all writes have finished
                         possibleValues.get(i).add(writes.get(writes.size()-1).value);
                     }
-                    System.out.println(possibleValues.get(i));
+//                    System.out.println(possibleValues.get(i));
                 }
 /*                Integer currentRegisterValue = null;
                 int currentWriteStart = -1;
