@@ -150,9 +150,11 @@ public class Main {
     public static void ReadOverlappingMultipleWrites() {
         Register register = new Register();
         register.write(1, 0, 3); // W(1)
-        register.read(2, 4); // R¹
+        register.read(1, 2); // R¹
         register.write(2, 3, 5); // W(2)
-        register.read(4, 6); // R²
+        register.read(2, 4); // R²
+        register.write(3,5,8);
+        register.read(4,8);
 
         List<List<Integer>> validReads = register.getValidReadValues();
         for(List<Integer> list : validReads){

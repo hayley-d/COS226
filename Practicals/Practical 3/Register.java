@@ -30,6 +30,9 @@ public class Register {
                     possibleValues.add(new ArrayList<Integer>());
                     int start = reads.get(i).startTime;
                     int end = reads.get(i).endTime;
+                    if(start < firstWriteEnd){
+                        possibleValues.get(i).add(null);
+                    }
                     if(end < firstWriteStart){
                         //start before any writes
                         possibleValues.get(i).add(null);
@@ -64,31 +67,16 @@ public class Register {
                     }
 //                    System.out.println(possibleValues.get(i));
                 }
-/*                Integer currentRegisterValue = null;
-                int currentWriteStart = -1;
-                int currentWriteEnd = -1;
-                for(RegisterOperation op : operations){
-                    if(op.type == RegisterOperation.Type.WRITE){
-                        currentWriteStart = op.startTime;
-                        currentWriteEnd = op.endTime;
-                    }
-                }*/
 
-/*               for(List<Integer> list : possibleValues){
-                    System.out.println(list);
-                }*/
                 generatePermutations(possibleValues,results);
-          } else if(writes.size() == 0){
+          } else if(writes.size() == 0 && reads.size() != 0){
                 //no writes
                 for(int i = 0; i < reads.size(); ++i){
                     possibleValues.add(new ArrayList<Integer>());
-                    possibleValues.get(i).add(0);
+                    possibleValues.get(i).add(null);
                 }
                 generatePermutations(possibleValues,results);
           }
-/*            for(List<Integer> list : results){
-                System.out.println(list);
-            }*/
         }
 
         return results;
