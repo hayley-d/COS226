@@ -6,6 +6,7 @@ class Node {
     List<Node> children;
     List<Label> labels;
     HashSet<Integer> childrenValues;
+    Integer childValue = 0;
 
     public Node(Integer value, String path) {
         this.value = value;
@@ -53,6 +54,139 @@ public class ExecutionTree {
 
     public void assignLabels() {
         // This is yours to fill in
+        if(root == null) return;
+        populateValues(root);
+        postOrder(root); 
+        criticalCheck(root);    
+    }
+    
+    private void populateValues(Node current){
+        if(current == null) return;
+        
+        for(Node n: current.children){
+            populateValues(n);
+        }
+        
+        if(current.children.isEmpty()){
+            current.childValue = current.value;
+        }
+        else if(current.children.size() == 1){
+            current.childValue = current.children.get(0).childValue;
+        }else{
+            boolean sameValue = true;
+            for(int i = 0; i < current.children.size()-1;++i){
+                for(int j = i + 1; j < current.children.size();++j){
+                    if(current.children.get(i).childValue != current.children.get(j).childValue){
+                        sameValue = false;
+                        break;
+                    }
+                }
+                if(!sameValue) break;
+            }
+            if(sameValue) current.childValue = current.children.get(0).childValue;
+            if(!sameValue) current.childValue = null;
+        }
+
+    }
+
+/*    private void postOrder(Node current){
+        if(current == null) return;
+        
+        for(Node n: current.children){
+            postOrder(n);
+        }
+
+        if(current.children.isEmpty()){
+            current.addLabel(Label.FINAL);
+            return;
+        } else if(current.children.size() == 1){
+            current.addLabel(Label.UNIVALENT);
+            return;
+        } else{
+            if(current.childrenValues.size() > 1){
+                current.addLabel(Label.BIVALENT);
+            } else {
+                 current.addLabel(Label.UNIVALENT);
+            }
+            return;
+        }
+    }*/
+    private void postOrder(Node current){
+        if(current == null) return;
+        
+        for(Node n: current.children){
+            postOrder(n);
+        }
+
+        if(current.children.isEmpty()){
+            current.addLabel(Label.FINAL);
+            return;
+        } else if(current.childValue != null){
+            current.addLabel(Label.UNIVALENT);
+            return;
+        } else{
+            current.addLabel(Label.BIVALENT);
+            return;
+        }
+    }
+
+
+
+    private void dfs(Node current){
+        if(current == null){
+          return;
+        }
+
+        if(current.children.isEmpty()){
+            current.labels.add(Label.FINAL);
+            return;
+        } else{
+            boolean bivalent = isBivalent(current,current.value); 
+            if(bivalent){
+                 current.labels.add(Label.BIVALENT);
+            } else{
+                 current.labels.add(Label.UNIVALENT);
+            }
+        }
+        
+        for(Node n: current.children){
+            dfs(n);
+        }
+    }
+
+    private void criticalCheck(Node current){
+        if(current == null) return;
+        if(current.labels.contains(Label.BIVALENT)){
+            boolean isCrit = true;
+            for(Node n: current.children){
+               if(n.labels.contains(Label.BIVALENT)){
+                   isCrit = false;
+                  break;
+                } 
+            }
+            if(isCrit){
+                current.labels.add(Label.CRITICAL);
+            } else{ 
+                for(Node n : current.children){
+                    criticalCheck(n);
+                }
+            } 
+        }
+    }
+
+    private boolean isBivalent(Node current, Integer value){
+        if(current == null){
+            return false;
+        }
+        
+        if(current.value != value){
+            return true;
+        }
+
+        for(Node n : current.children){
+            if(isBivalent(n,value)) return true;
+        }
+        return false;
     }
 
     // I wouldn't change this if I were you
@@ -70,6 +204,8 @@ public class ExecutionTree {
         }
 
         root.addLabel(Label.INITIAL);
+//        root.addLabel(Label.BIVALENT);
+
     }
 
     public Node generateTree(String path, int[] counts, int n, List<Character> chars) {

@@ -20,53 +20,23 @@ public class Main {
         System.out.println("###");
 
     }
-
-    public static void tree(int size, int seed) {
-
-        int n = 1; // Number of operations for each thread
-        List<Character> threads = List.of('A', 'B'); // Characters to use
+    
+    public static void tree(int size, int seed){
+        int n = 2; //num operations per thread
+        List<Character> threads = List.of('A','B');
         ExecutionTree e = new ExecutionTree(threads, n, seed);
-        e.root.assignLabels();
-
-        ExecutionTreeMemo e2 = new ExecutionTreeMemo(threads, n, seed);
-        e2.root.assignLabels();
-        System.out.println("Tree with each thread making " + size + " moves and with seed " + seed + ": "
-                + compareTrees(e.root, e2.root));
+        e.assignLabels();
+        e.root.printTree("a",true);
     }
 
-    public static boolean compareTrees(Node node1, NodeMemo node2) {
-        if (node1 == null && node2 == null) {
-            return true;
-        }
+    public static void myTreeTest(){
+        List<Character> threads = List.of('A','B','C');
+        int numOps = 3;
+        Random r = new Random(100);
+        Integer seed = r.nextInt(50000);
 
-        if (node1 == null || node2 == null) {
-            return false;
-        }
-
-        // Compare the labels
-        List<Label> labels1 = new ArrayList<>(node1.labels);
-        List<Label> labels2 = new ArrayList<>(node2.labels);
-        Collections.sort(labels1);
-        Collections.sort(labels2);
-
-        if (!labels1.equals(labels2)) {
-            return false;
-        }
-
-        // Compare the number of children
-        if (node1.children.size() != node2.children.size()) {
-            return false;
-        }
-
-        // Compare the children recursively
-        for (int i = 0; i < node1.children.size(); i++) {
-            Node child1 = node1.children.get(i);
-            NodeMemo child2 = node2.children.get(i);
-            if (!compareTrees(child1, child2)) {
-                return false;
-            }
-        }
-
-        return true;
+        ExecutionTree myTree = new ExecutionTree(threads,numOps,seed);
+        myTree.assignLabels();
+        myTree.root.printTree(" ",true);
     }
 }
