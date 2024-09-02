@@ -59,6 +59,16 @@ public class Main {
 //        if(timestamp.timestamp[0] == 2 && timestamp.timestamp[1] == 2 && timestamp.timestamp[2] == 1) System.out.println("Correct");
         System.out.println(timestamp);
 
+        int [] t4 = {1};
+        int [] t5 = {1};
+        int [] t6 = {0};
+        BoundedTimestamp b7 = new BoundedTimestamp(t4); 
+        BoundedTimestamp b6 = new BoundedTimestamp(t5);
+        BoundedTimestamp b5 = new BoundedTimestamp(t6);
+        BoundedTimestamp[] labels2 = {b7,b6,b5};
+        BoundedTimestamp timestamp2 = b7.getNext(labels2,0);
+
+        System.out.println(timestamp2);
     }
 
     // public static void testWithLock() throws InterruptedException {

@@ -65,6 +65,20 @@ public class BoundedTimestamp {
                 largest = label[i].timestamp;
             }
         }
+
+        if(largest.length == 1){
+            switch(largest[0]){
+                case 0:
+                    int[] arr = {1};
+                    return new BoundedTimestamp(arr);
+                case 1:
+                    int [] arr2 = {2};
+                    return new BoundedTimestamp(arr2);
+                case 2:
+                    int[] arr3 = {0};
+                    return new BoundedTimestamp(arr3);
+            }
+        }
         
         //if all 2s roll over
         boolean all2s = false;
