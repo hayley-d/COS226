@@ -2,7 +2,63 @@
 
 public class Main {
     public static void main(String[] args) throws Exception {
+        testCompare();                
+        lessThanTest();
+    }
+
+    public static void testCompare(){
+        int[] timestamp = {2,2,1};
+        int [] timestamp2 = {2,0,2}; 
         
+        BoundedTimestamp b1 = new BoundedTimestamp(timestamp);
+        BoundedTimestamp b2 = new BoundedTimestamp(timestamp2);
+
+        if(b1.compare(b2) == 1){
+            System.out.println("Correct");
+        } else{
+            System.out.println("Failed test 1");
+        }
+        
+        int [] t1 = {2,2,2,1};
+        int [] t2 = {2,2,1,0};
+        
+        BoundedTimestamp b3 = new BoundedTimestamp(t1);
+        BoundedTimestamp b4 = new BoundedTimestamp(t2);
+
+        if(b3.compare(b4) == -1){
+            System.out.println("Correct");
+        } else{
+            System.out.println("Failed test 2");
+        }
+
+        int [] t3 = {0,1,0};
+        int [] t4 = {0,1,0};
+        
+        BoundedTimestamp b5 = new BoundedTimestamp(t3);
+        BoundedTimestamp b6 = new BoundedTimestamp(t4);
+
+        if(b5.compare(b6) == 0){
+            System.out.println("Correct");
+        } else{
+            System.out.println("Failed test 2");
+        }
+        
+        
+    }
+
+    public static void lessThanTest(){
+        int [] t1 = {2,1};
+        int [] t2 = {1,1};
+        int [] t3 = {0,0};
+        BoundedTimestamp b1 = new BoundedTimestamp(t3); 
+        BoundedTimestamp b3 = new BoundedTimestamp(t1);
+        BoundedTimestamp b4 = new BoundedTimestamp(t2);
+        BoundedTimestamp[] labels = {b1,b3,b4};
+        BoundedTimestamp timestamp = b1.getNext(labels,0);
+        
+//        if(timestamp.timestamp[0] == 2 && timestamp.timestamp[1] == 2 && timestamp.timestamp[2] == 1) System.out.println("Correct");
+        System.out.println(timestamp);
+
     }
 
     // public static void testWithLock() throws InterruptedException {
