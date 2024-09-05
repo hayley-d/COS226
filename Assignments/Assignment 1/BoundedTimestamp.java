@@ -55,7 +55,7 @@ public class BoundedTimestamp {
 
     public static BoundedTimestamp getNext(BoundedTimestamp[] label,int indexAskingForLabel) {
         //find the largest timestamp in the array
-        int[] largest = label[0].timestamp;
+        int[] largest = indexAskingForLabel == 0 ? label[1].timestamp : label[0].timestamp;
         int largestIndex = 0;
         for(int i = 1; i < label.length; ++i){
             if(i == indexAskingForLabel) continue;

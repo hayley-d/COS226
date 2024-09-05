@@ -47,14 +47,16 @@ public class Main {
     }
 
     public static void lessThanTest(){
-        int [] t1 = {2,1};
-        int [] t2 = {1,1};
-        int [] t3 = {0,0};
-        BoundedTimestamp b1 = new BoundedTimestamp(t3); 
-        BoundedTimestamp b3 = new BoundedTimestamp(t1);
-        BoundedTimestamp b4 = new BoundedTimestamp(t2);
-        BoundedTimestamp[] labels = {b1,b3,b4};
-        BoundedTimestamp timestamp = b1.getNext(labels,0);
+        int [] t1t = {0,0,0};
+        int [] t2t = {0,2,2};
+        int [] t3t = {0,2,0};
+        int [] t4t = {0,0,0};
+        BoundedTimestamp b1 = new BoundedTimestamp(t1t); 
+        BoundedTimestamp b3 = new BoundedTimestamp(t2t);
+        BoundedTimestamp b4 = new BoundedTimestamp(t3t);
+        //BoundedTimestamp b2 = new BoundedTimeStamp(t4t);
+        BoundedTimestamp[] labels = {b1,b3,b4,b1};
+        BoundedTimestamp timestamp = b1.getNext(labels,1);
         
 //        if(timestamp.timestamp[0] == 2 && timestamp.timestamp[1] == 2 && timestamp.timestamp[2] == 1) System.out.println("Correct");
         System.out.println(timestamp);
@@ -69,6 +71,17 @@ public class Main {
         BoundedTimestamp timestamp2 = b7.getNext(labels2,0);
 
         System.out.println(timestamp2);
+
+
+        int [] t8 = {2};
+        int [] t9 = {1};
+        BoundedTimestamp b8 = new BoundedTimestamp(t8); 
+        BoundedTimestamp b9 = new BoundedTimestamp(t9);
+        BoundedTimestamp[] labels3 = {b8,b9};
+        BoundedTimestamp timestamp3 = b8.getNext(labels3,0);
+
+        System.out.println(timestamp3);
+ 
     }
 
     // public static void testWithLock() throws InterruptedException {
