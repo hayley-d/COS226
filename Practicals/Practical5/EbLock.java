@@ -14,8 +14,7 @@ public class EbLock implements Lock{
         try{
             Backoff backoff = new Backoff(MIN_DELAY,MAX_DELAY);
             while(true){
-                while(state.get()){}
-                if(!state.getAndSet(true)){
+                if(!state.get() && state.compareAndSet(false,true)){
                     return;
                 } else {
                     backoff.backoff();
