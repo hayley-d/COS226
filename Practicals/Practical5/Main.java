@@ -1,15 +1,17 @@
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main {
 
-  static ConcurrentLinkedQueue<Integer> queue = new ConcurrentLinkedQueue<>();
+  static Deque<Integer> queue = new LinkedList<>();
 
   public static void main(String[] args) {
 
     for (int i = 1; i <= 30; i++) {
-      queue.add(i);
+      queue.addLast(i);
     }
 
     ExponentialBackoffTest();
@@ -24,10 +26,10 @@ public class Main {
       for (int j = 0; j < 3; j++) {
         lock.lock();
         try {
-          Integer item = queue.poll();
+          Integer item = queue.pollFirst();
           if (item != null) {
             System.out.println(threadName + " dequeued: " + item);
-            Integer lastItem = getLastItem(queue) + 1;            
+            Integer lastItem = queue.peekLast() + 1;            
             queue.add(lastItem);
             System.out.println(Thread.currentThread().getName() + " enqueued: " + item);
           }
