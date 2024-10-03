@@ -1,3 +1,4 @@
+import java.util.concurrent.locks.Lock;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -59,47 +60,28 @@ public class Main {
     for (int i = 1; i <= 10; i++) {
       queue.addLast(i);
     }
+    System.out.println("TTAS Lock with no contention:");
+    TTASTest(1);
+
+    queue.clear();
+    for (int i = 1; i <= 10; i++) {
+      queue.addLast(i);
+    }
+    System.out.println("TTAS Lock with low contention:");
+    TTASTest(3);
+
+    queue.clear();
+    for (int i = 1; i <= 70; i++) {
+      queue.addLast(i);
+    }
+    System.out.println("TTAS Lock with high contention:");
+    TTASTest(20);
 
   }
 
   public static void ExponentialBackoffTest(int numThreads) {
     long startTime = System.currentTimeMillis();
-
-    EbLock lock = new EbLock();
-    ExecutorService executor = Executors.newFixedThreadPool(numThreads);
-    Runnable task = () -> {
-      String threadName = Thread.currentThread().getName();
-
-      for (int j = 0; j < 3; j++) {
-        lock.lock();
-        try {
-          // System.out.println(Thread.currentThread().getName() + " aquired the
-          // lock");
-          Integer item = queue.pollFirst();
-          if (item != null) {
-            System.out.println(threadName + " dequeued: " + item);
-          }
-        } finally {
-          lock.unlock();
-          // System.out.println(Thread.currentThread().getName() + " released
-          // the lock");
-        }
-      }
-    };
-
-    for (int i = 0; i < numThreads; i++) {
-      executor.submit(task);
-    }
-
-    try {
-      executor.shutdown();
-      if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
-        System.out.println("Timeout reached");
-      }
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-
+    test1(new EbLock(),numThreads); 
     long endTime = System.currentTimeMillis();
     long duration = endTime - startTime;
     System.out.println("Backoff Test completed in " + duration + " milliseconds.");
@@ -116,8 +98,27 @@ public class Main {
 
   public static void TASTest(int numThreads) {
     long startTime = System.currentTimeMillis();
+    test1(new TASLock(),numThreads); 
+    long endTime = System.currentTimeMillis();
+    long duration = endTime - startTime;
+    System.out.println("TAS Test completed in " + duration + " milliseconds.");
+    printQueue();
+  }
 
-    TASLock lock = new TASLock();
+  public static void TTASTest(int numThreads) {
+    long startTime = System.currentTimeMillis();
+
+    test1(new TTASLock(),numThreads); 
+
+    long endTime = System.currentTimeMillis();
+    long duration = endTime - startTime;
+    System.out.println("TTAS Test completed in " + duration + " milliseconds.");
+    printQueue();
+  }
+
+  public static void test1(Lock lock,int numThreads) {
+    long startTime = System.currentTimeMillis();
+
     ExecutorService executor = Executors.newFixedThreadPool(numThreads);
     Runnable task = () -> {
       String threadName = Thread.currentThread().getName();
@@ -147,10 +148,5 @@ public class Main {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-
-    long endTime = System.currentTimeMillis();
-    long duration = endTime - startTime;
-    System.out.println("TAS Test completed in " + duration + " milliseconds.");
-    printQueue();
   }
 }
