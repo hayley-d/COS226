@@ -33,6 +33,33 @@ public class Main {
     }
     System.out.println("Backoff Lock with no contention:");
     ExponentialBackoffTest(1);
+
+    queue.clear();
+    for (int i = 1; i <= 10; i++) {
+      queue.addLast(i);
+    }
+    System.out.println("TAS Lock with no contention:");
+    TASTest(1);
+
+    queue.clear();
+    for (int i = 1; i <= 10; i++) {
+      queue.addLast(i);
+    }
+    System.out.println("TAS Lock with low contention:");
+    TASTest(3);
+
+    queue.clear();
+    for (int i = 1; i <= 70; i++) {
+      queue.addLast(i);
+    }
+    System.out.println("TAS Lock with high contention:");
+    TASTest(20);
+
+    queue.clear();
+    for (int i = 1; i <= 10; i++) {
+      queue.addLast(i);
+    }
+
   }
 
   public static void ExponentialBackoffTest(int numThreads) {
@@ -46,14 +73,16 @@ public class Main {
       for (int j = 0; j < 3; j++) {
         lock.lock();
         try {
-          //System.out.println(Thread.currentThread().getName() + " aquired the lock");
+          // System.out.println(Thread.currentThread().getName() + " aquired the
+          // lock");
           Integer item = queue.pollFirst();
           if (item != null) {
             System.out.println(threadName + " dequeued: " + item);
           }
         } finally {
           lock.unlock();
-          //System.out.println(Thread.currentThread().getName() + " released the lock");
+          // System.out.println(Thread.currentThread().getName() + " released
+          // the lock");
         }
       }
     };
@@ -62,7 +91,6 @@ public class Main {
       executor.submit(task);
     }
 
-    
     try {
       executor.shutdown();
       if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
@@ -84,5 +112,45 @@ public class Main {
     } else {
       System.out.println("Queue contents: " + queue);
     }
+  }
+
+  public static void TASTest(int numThreads) {
+    long startTime = System.currentTimeMillis();
+
+    TASLock lock = new TASLock();
+    ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+    Runnable task = () -> {
+      String threadName = Thread.currentThread().getName();
+
+      for (int j = 0; j < 3; j++) {
+        lock.lock();
+        try {
+          Integer item = queue.pollFirst();
+          if (item != null) {
+            System.out.println(threadName + " dequeued: " + item);
+          }
+        } finally {
+          lock.unlock();
+        }
+      }
+    };
+
+    for (int i = 0; i < numThreads; i++) {
+      executor.submit(task);
+    }
+
+    try {
+      executor.shutdown();
+      if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
+        System.out.println("Timeout reached");
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    long endTime = System.currentTimeMillis();
+    long duration = endTime - startTime;
+    System.out.println("TAS Test completed in " + duration + " milliseconds.");
+    printQueue();
   }
 }
