@@ -1,7 +1,7 @@
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-class CourseGrainedTree<T>{
+class CourseGrainedTree<T extends Comparable<T>>{
     public Node<T> root;
     private Lock lock = new ReentrantLock();
 
@@ -35,7 +35,7 @@ class CourseGrainedTree<T>{
         if(current != null){
             if(current.value.compareTo(value) == 0){
                 return true;
-            } else if(current.value > value){
+            } else if(current.value.compareTo(value) > 0){
                 return recursive_contains(value,current.left);
             } else {
                 return recursive_contains(value,current.right);
@@ -67,7 +67,7 @@ class CourseGrainedTree<T>{
                     current.left = new Node<T>(value);
                     return true;
                 } else {
-                    return revursive_insert(value,current.left);
+                    return recursive_insert(value,current.left);
                 }
             }
             if(current.value.compareTo(value) < 0){
@@ -75,7 +75,7 @@ class CourseGrainedTree<T>{
                     current.right = new Node<T>(value);
                     return true;
                 } else {
-                    return revursive_insert(value,current.right);
+                    return recursive_insert(value,current.right);
                 }
             }
         }
@@ -85,7 +85,7 @@ class CourseGrainedTree<T>{
     public boolean remove(T value){
         lock.lock();
         try{
-            if(!isEmpty(){
+            if(!isEmpty()){
                 if(contains(value)){
                     if(root.value.compareTo(value) == 0){
                         if(root.right == null && root.left == null){

@@ -2,19 +2,19 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class LockNode<T>{
+class LockNode<T extends Comparable<T>>{
     private Lock lock = new ReentrantLock();
     private AtomicBoolean locked;
     public T value;
-    public Node<T> left;
-    public Node<T> right;
+    public LockNode<T> left;
+    public LockNode<T> right;
 
 
-    public Node(T value){
-        this.next = null;
-        this.next = null;
+    public LockNode(T value){
+        this.left = null;
+        this.right = null;
         this.value = value;
-        this.locked = false;
+        this.locked.set(false);
     }
 
     public void lock(){

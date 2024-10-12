@@ -1,7 +1,7 @@
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-class FineGrainedTree<T>{
+class FineGrainedTree<T extends Comparable<T>>{
     public LockNode<T> root;
 
 
@@ -74,7 +74,7 @@ class FineGrainedTree<T>{
         try{
             if(!contains(value)){
                 if(isEmpty()){
-                    this.root = new Node<T>(value);
+                    this.root = new LockNode<T>(value);
                     return true;
                 } else {
                     if(current.value.compareTo(value) > 0) {
@@ -95,7 +95,6 @@ class FineGrainedTree<T>{
             } else {
                 return false;
             }
-        }
         } finally{
             current.unlock();
         }
@@ -125,7 +124,7 @@ class FineGrainedTree<T>{
         }
         child.lock();
         current.unlock();
-        return revursive_insert(value,child);
+        return recursive_insert(value,child);
     }
 
     public boolean remove(T value){
@@ -152,9 +151,10 @@ class FineGrainedTree<T>{
         } finally {
             current.unlock();
         }
+        return false;
     }
 
-    public Node<T> getMax(LockNode<T> root){
+    public LockNode<T> getMax(LockNode<T> root){
         LockNode<T> current = root;
         current.lock();
         try {
@@ -208,11 +208,11 @@ class FineGrainedTree<T>{
             return true; 
         } else {
             child.right.lock();
-            Node<T> left_sub_tree = child.right.left;
+            LockNode<T> left_sub_tree = child.right.left;
 
             child.left.lock();
             try {
-                Node<T> left_max = getMax(child.left); 
+                LockNode<T> left_max = getMax(child.left); 
                 if(left_max == null) {
                     left_max = child.left;
                     left_max.right = left_sub_tree;
