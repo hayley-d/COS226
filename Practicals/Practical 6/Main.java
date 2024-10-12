@@ -21,7 +21,8 @@ class Main{
     public static void main(String[] args){
 
        courseTest(); 
-        fineTest();
+       fineTest();
+        optimisticTest();
     }
 
     private static void courseTest(){
@@ -76,6 +77,99 @@ class Main{
         testInsertions(tree2,20);
         testLookups(tree2,20);
         testRemoval(tree2,20);
+    }
+
+    private static void optimisticTest(){
+        OptimisticTree<Integer> tree = new OptimisticTree<Integer>();
+        System.out.println("Testing Optimistic Synchronization:");
+        System.out.println("\n5 Threads:");
+        testInsertions(tree,5);
+        testLookups(tree,5);
+        testRemoval(tree,5);
+
+        tree = new OptimisticTree<Integer>();
+        System.out.println("\n10 Threads:");
+        testInsertions(tree,10);
+        testLookups(tree,10);
+        testRemoval(tree,10);
+
+        tree = new OptimisticTree<Integer>();
+        System.out.println("\n15 Threads:");
+        testInsertions(tree,15);
+        testLookups(tree,15);
+        testRemoval(tree,15);
+
+        OptimisticTree<Integer> tree2 = new OptimisticTree<Integer>();
+        System.out.println("\n20 Threads:");
+        testInsertions(tree2,20);
+        testLookups(tree2,20);
+        testRemoval(tree2,20);
+    }
+
+    private static void testInsertions(OptimisticTree<Integer> tree, int numThreads) {
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        Random random = new Random();
+        long startTime = System.nanoTime();
+        
+        for (int i = 0; i < 10; i++) {
+            executor.submit(() -> {
+                //each thead inserts 10 random integers from the array
+                for (int j = 0; j < 10; j++) { 
+                    int index = random.nextInt(numbers.length);
+                    int value = numbers[index];
+                    tree.insert(value);
+                }
+            });
+        }
+
+        shutdownExecutor(executor);
+
+        long endTime = System.nanoTime();
+        System.out.println("Insertion test completed in: " + (endTime - startTime) + " nanoseconds");
+    }
+
+    private static void testLookups(OptimisticTree<Integer> tree, int numThreads) {
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        Random random = new Random();
+        long startTime = System.nanoTime();
+        
+        for (int i = 0; i < 10; i++) {
+            executor.submit(() -> {
+                //each thead searches 10 random integers from the array
+                for (int j = 0; j < 10; j++) { 
+                    int index = random.nextInt(numbers.length);
+                    int value = numbers[index];
+                    tree.contains(value);
+                }
+            });
+        }
+
+        shutdownExecutor(executor);
+
+        long endTime = System.nanoTime();
+        System.out.println("Lookup test completed in: " + (endTime - startTime) + " nanoseconds");
+    }
+
+    private static void testRemoval(OptimisticTree<Integer> tree, int numThreads) {
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        Random random = new Random();
+        long startTime = System.nanoTime();
+        
+        for (int i = 0; i < 10; i++) {
+            executor.submit(() -> {
+                //each thead removes 10 random integers from the array
+                for (int j = 0; j < 10; j++) { 
+                    int index = random.nextInt(numbers.length);
+                    int value = numbers[index];
+                    tree.insert(value);
+                }
+            });
+        }
+
+        shutdownExecutor(executor);
+
+        long endTime = System.nanoTime();
+        System.out.println("Removal test completed in: " + (endTime - startTime) + " nanoseconds");
     }
 
     private static void testInsertions(FineGrainedTree<Integer> tree, int numThreads) {

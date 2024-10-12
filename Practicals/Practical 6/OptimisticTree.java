@@ -1,11 +1,11 @@
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-class Optimistic<T extends Comparable<T>>{
+class OptimisticTree<T extends Comparable<T>>{
     public LockNode<T> root;
     private Lock lock = new ReentrantLock();
 
-    public Optimistic(){
+    public OptimisticTree(){
         this.root = null;
     }
 
