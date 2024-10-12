@@ -1,3 +1,6 @@
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 class CourseGrainedTree<T>{
     public Node<T> root;
     private Lock lock = new ReentrantLock();
@@ -7,7 +10,12 @@ class CourseGrainedTree<T>{
     }
 
     public boolean isEmpty(){
-        return root == null;
+        lock.lock();
+        try{
+            return root == null;
+        } finally{
+            lock.unlock();
+        }
     }
 
     public boolean contains(T value){
@@ -25,7 +33,7 @@ class CourseGrainedTree<T>{
     // helper method does not aquire lock again since aquired by calling method
     private boolean recursive_contains(T value, Node<T> current){
         if(current != null){
-            if(current.value == value){
+            if(current.value.compareTo(value) == 0){
                 return true;
             } else if(current.value > value){
                 return recursive_contains(value,current.left);
@@ -54,7 +62,7 @@ class CourseGrainedTree<T>{
 
     private boolean recursive_insert(T value, Node<T> current){
         if(current != null){
-            if(current.value > value){
+            if(current.value.compareTo(value) > 0){
                 if(current.left == null){
                     current.left = new Node<T>(value);
                     return true;
@@ -62,7 +70,7 @@ class CourseGrainedTree<T>{
                     return revursive_insert(value,current.left);
                 }
             }
-            if(current.value < value){
+            if(current.value.compareTo(value) < 0){
                 if(current.right == null){
                     current.right = new Node<T>(value);
                     return true;
@@ -79,7 +87,7 @@ class CourseGrainedTree<T>{
         try{
             if(!isEmpty(){
                 if(contains(value)){
-                    if(root.value == value){
+                    if(root.value.compareTo(value) == 0){
                         if(root.right == null && root.left == null){
                             root = null;
                             return true;
@@ -110,10 +118,10 @@ class CourseGrainedTree<T>{
     private boolean recursive_remove(T value, Node<T> current){
         if(current != null){
             if(current.left != null || current.right != null){
-                if(current.value > value){
+                if(current.value.compareTo(value) > 0){
                     if(current.left != null){
-                        if(current.left.value == value){
-                            return removeNode(current.left);
+                        if(current.left.value.compareTo(value) == 0){
+                            return removeNode(current,current.left);
                         } else{
                             return recursive_remove(value,current.left);
                         }
@@ -121,8 +129,8 @@ class CourseGrainedTree<T>{
                     return false;
                 } else{
                     if(current.right != null){
-                        if(current.right.value == value){
-                            return removeNode(current.right);
+                        if(current.right.value.compareTo(value) == 0){
+                            return removeNode(current, current.right);
                         } else{
                             return recursive_remove(value,current.right);
                         }
@@ -148,24 +156,40 @@ class CourseGrainedTree<T>{
         }
     }
 
-    private boolean removeNode(Node<T> root){
+    private boolean removeNode(Node<T> current,Node<T> child){
         lock.lock();
         try{
-            if(root.right == null && root.left == null){
-                root = null;
+            if(child.right == null && child.left == null){
+                if(current.right == child) {
+                    current.right = null;
+                } else {
+                    current.left = null;
+                }
                 return true;
-            } else if(root.right == null && root.left != null){
-                root = root.left;
+            } else if(child.right == null && child.left != null){
+                if(current.right == child) {
+                    current.right = child.left;
+                } else {
+                    current.left = child.left;
+                }
                 return true;
             } else if(root.right != null && root.left == null){
-                root = root.right;
+                if(current.right == child) {
+                    current.right = child.right;
+                } else {
+                    current.left = child.right;
+                }
                 return true;
             } else{
-                Node<T> left_sub_tree = root.right.left;
-                Node<T> left_max = getMax(root.left); 
+                Node<T> left_sub_tree = child.right.left;
+                Node<T> left_max = getMax(child.left); 
                 left_max.right = left_sub_tree;
-                root.right.left = root.left;
-                root = root.right;
+                child.right.left = child.left;
+                if(current.right == child) {
+                    current.right = child.right;
+                } else {
+                    current.left = child.right;
+                }               
                 return true;
             }
         } finally{
