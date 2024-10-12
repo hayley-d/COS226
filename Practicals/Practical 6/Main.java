@@ -27,14 +27,25 @@ class Main{
     private static void courseTest(){
         CourseGrainedTree<Integer> tree = new CourseGrainedTree<Integer>();
         System.out.println("Testing Course-Grained Synchronization:");
-        System.out.println("Low contention");
+        System.out.println("\n5 Threads:");
         testInsertions(tree,5);
-        printTree(tree.root);
         testLookups(tree,5);
         testRemoval(tree,5);
 
+        tree = new CourseGrainedTree<Integer>();
+        System.out.println("\n10 Threads:");
+        testInsertions(tree,10);
+        testLookups(tree,10);
+        testRemoval(tree,10);
+
+        tree = new CourseGrainedTree<Integer>();
+        System.out.println("\n15 Threads:");
+        testInsertions(tree,15);
+        testLookups(tree,15);
+        testRemoval(tree,15);
+
         CourseGrainedTree<Integer> tree2 = new CourseGrainedTree<Integer>();
-        System.out.println("High contention");
+        System.out.println("\n20 Threads:");
         testInsertions(tree2,20);
         testLookups(tree2,20);
         testRemoval(tree2,20);
@@ -43,13 +54,25 @@ class Main{
     private static void fineTest(){
         FineGrainedTree<Integer> tree = new FineGrainedTree<Integer>();
         System.out.println("\nTesting Fine-Grained Synchronization:");
-        System.out.println("Low contention");
+        System.out.println("\n5 Threads:");
         testInsertions(tree,5);
         testLookups(tree,5);
         testRemoval(tree,5);
 
+        tree = new FineGrainedTree<Integer>();
+        System.out.println("\n10 Threads:");
+        testInsertions(tree,10);
+        testLookups(tree,10);
+        testRemoval(tree,10);
+
+        tree = new FineGrainedTree<Integer>();
+        System.out.println("\n15 Threads:");
+        testInsertions(tree,15);
+        testLookups(tree,15);
+        testRemoval(tree,15);
+
         FineGrainedTree<Integer> tree2 = new FineGrainedTree<Integer>();
-        System.out.println("High contention");
+        System.out.println("\n20 Threads");
         testInsertions(tree2,20);
         testLookups(tree2,20);
         testRemoval(tree2,20);
@@ -58,7 +81,7 @@ class Main{
     private static void testInsertions(FineGrainedTree<Integer> tree, int numThreads) {
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
         Random random = new Random();
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         
         for (int i = 0; i < 10; i++) {
             executor.submit(() -> {
@@ -73,14 +96,14 @@ class Main{
 
         shutdownExecutor(executor);
 
-        long endTime = System.currentTimeMillis();
-        System.out.println("Insertion test completed in: " + (endTime - startTime) + " ms");
+        long endTime = System.nanoTime();
+        System.out.println("Insertion test completed in: " + (endTime - startTime) + " nanoseconds");
     }
 
     private static void testLookups(FineGrainedTree<Integer> tree, int numThreads) {
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
         Random random = new Random();
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         
         for (int i = 0; i < 10; i++) {
             executor.submit(() -> {
@@ -95,14 +118,14 @@ class Main{
 
         shutdownExecutor(executor);
 
-        long endTime = System.currentTimeMillis();
-        System.out.println("Lookup test completed in: " + (endTime - startTime) + " ms");
+        long endTime = System.nanoTime();
+        System.out.println("Lookup test completed in: " + (endTime - startTime) + " nanoseconds");
     }
 
     private static void testRemoval(FineGrainedTree<Integer> tree, int numThreads) {
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
         Random random = new Random();
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         
         for (int i = 0; i < 10; i++) {
             executor.submit(() -> {
@@ -117,14 +140,14 @@ class Main{
 
         shutdownExecutor(executor);
 
-        long endTime = System.currentTimeMillis();
-        System.out.println("Removal test completed in: " + (endTime - startTime) + " ms");
+        long endTime = System.nanoTime();
+        System.out.println("Removal test completed in: " + (endTime - startTime) + " nanoseconds");
     }
 
     private static void testInsertions(CourseGrainedTree<Integer> tree, int numThreads) {
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
         Random random = new Random();
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         
         for (int i = 0; i < 10; i++) {
             executor.submit(() -> {
@@ -139,14 +162,14 @@ class Main{
 
         shutdownExecutor(executor);
 
-        long endTime = System.currentTimeMillis();
-        System.out.println("Insertion test completed in: " + (endTime - startTime) + " ms");
+        long endTime = System.nanoTime();
+        System.out.println("Insertion test completed in: " + (endTime - startTime) + " nanoseconds");
     }
 
     private static void testLookups(CourseGrainedTree<Integer> tree, int numThreads) {
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
         Random random = new Random();
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         
         for (int i = 0; i < 10; i++) {
             executor.submit(() -> {
@@ -161,14 +184,14 @@ class Main{
 
         shutdownExecutor(executor);
 
-        long endTime = System.currentTimeMillis();
-        System.out.println("Lookup test completed in: " + (endTime - startTime) + " ms");
+        long endTime = System.nanoTime();
+        System.out.println("Lookup test completed in: " + (endTime - startTime) + " nanoseconds");
     }
 
     private static void testRemoval(CourseGrainedTree<Integer> tree, int numThreads) {
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
         Random random = new Random();
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         
         for (int i = 0; i < 10; i++) {
             executor.submit(() -> {
@@ -183,8 +206,8 @@ class Main{
 
         shutdownExecutor(executor);
 
-        long endTime = System.currentTimeMillis();
-        System.out.println("Removal test completed in: " + (endTime - startTime) + " ms");
+        long endTime = System.nanoTime();
+        System.out.println("Removal test completed in: " + (endTime - startTime) + " nanoseconds");
     }
 
 
