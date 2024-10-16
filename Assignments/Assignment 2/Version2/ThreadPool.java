@@ -88,7 +88,7 @@ class ThreadPool {
     public void awaitTermination() throws InterruptedException {
         lock.lock();
         try {
-            while (activeTasks.get() > 0) {
+            while (activeTasks.get() > 0 || !taskQueue.isEmpty()) {
                 condition.await(); 
             }
             shutdown();
@@ -101,7 +101,25 @@ class ThreadPool {
     private class Worker extends Thread {
         @Override
         public void run() {
-            while (!isShutdown.get()) {
+            try {
+                while(true) {
+                    if(isShutdown.get() && taskQueue.isEmpty()) {
+                        break;
+                    }
+
+                    try {
+                        Runnable task = taskQueue.take();
+                        task.run();
+                    } catch (InterruptedException e) {
+                        if(isShutdown.get() && taskQueue.isEmpty()) {
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            /*while (!isShutdown.get()) {
                 try {
                     Runnable task = taskQueue.take(); 
                     task.run();
@@ -110,7 +128,7 @@ class ThreadPool {
                         break; 
                     }
                 }
-            }
+            }*/
         }
     }
 }

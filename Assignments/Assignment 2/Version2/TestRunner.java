@@ -27,7 +27,7 @@ public class TestRunner {
 
         for (Method method : testClass.getDeclaredMethods()) {
             if (method.isAnnotationPresent(Test.class)) {
-                System.out.println("Adding test #" + count);
+                //System.out.println("Adding test #" + count);
                 count++;
                 testMethods.add(method);
             }
@@ -44,16 +44,18 @@ public class TestRunner {
             totalTests.incrementAndGet();
             threadPool.execute(() -> {
                 try {
-                    System.out.println(testMethod.getName() + " passed.");
+                    // Invoke the test method
+                    testMethod.invoke(null);  
+                    //System.out.println(testMethod.getName() + " passed.");
                     passedTests.incrementAndGet();
                 } catch (Exception e) {
-                    System.out.println(testMethod.getName() + " failed: " + e.getCause());
+                    //System.out.println(testMethod.getName() + " failed: " + e.getCause());
                     failedTests.incrementAndGet();
                 }
             });
         }
 
-        System.out.println("Initiating shutdown...");
+        //System.out.println("Initiating shutdown...");
         threadPool.slowShutdown();
         try {
             threadPool.awaitTermination(); // Wait for all tasks to complete
