@@ -15,14 +15,14 @@ public class TestRunner {
     private final AtomicInteger skippedTests = new AtomicInteger(0);
     private final long startTime;
     
-    public TestRunner(Class<?> testClass) {
+    public TestRunner(Class<?> testClass,int numberOfThreads) {
         this.startTime = System.nanoTime();
-        runTests(testClass);
+        runTests(testClass,numberOfThreads);
     }
 
-    public void runTests(Class<?> testClass) {
+    public void runTests(Class<?> testClass, int numberOfThreads) {
         int count = 0;
-        ThreadPool threadPool = new ThreadPool(5);
+        ThreadPool threadPool = new ThreadPool(numberOfThreads);
         List<Method> testMethods = new ArrayList<>();
 
         for (Method method : testClass.getDeclaredMethods()) {
