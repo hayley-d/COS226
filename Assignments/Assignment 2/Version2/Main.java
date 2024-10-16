@@ -1,7 +1,19 @@
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+
 public class Main {
     public static void main(String[] args) {
         poolTest();
         slowShutdownTest();
+        testTestRunner();
+        System.out.println("Test Runner finished.");
     }
 
     public static void poolTest() {
@@ -48,5 +60,34 @@ public class Main {
 
         System.out.println("All tasks have completed. The pool has shut down officially.");
     }
+
+    public static void testTestRunner() {
+        TestRunner runner = new TestRunner(Main.class);
+        System.out.println("Done");
+    }
+
+    @TestOrder(2)
+    @Test
+    public static void testMethodA() {
+        System.out.println("Test Method A is running.");
+    }
+
+    @TestOrder(1)
+    @Test
+    public static void testMethodB() {
+        System.out.println("Test Method B is running.");
+    }
+
+    @Test
+    public static void testMethodC() {
+        System.out.println("Test Method C is running.");
+    }
+
+    @TestOrder(3)
+    @Test
+    public void testMethodD() {
+        System.out.println("Test Method D is running.");
+    }
+
 }
 

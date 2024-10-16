@@ -64,9 +64,9 @@ class ThreadPool {
     private void completeTask() {
         lock.lock();
         try {
-            activeTasks.getAndDecrement();
-            completedTasks.getAndIncrement();
-            if (activeTasks.compareAndSet(0,0) && isShutdown.get()) {
+            activeTasks.decrementAndGet();
+            completedTasks.incrementAndGet();
+            if (activeTasks.get() == 0 && isShutdown.get()) {
                 condition.signalAll(); 
             }
         } finally {
@@ -91,6 +91,8 @@ class ThreadPool {
             while (activeTasks.get() > 0) {
                 condition.await(); 
             }
+            shutdown();
+            
         } finally {
             lock.unlock();
         }
