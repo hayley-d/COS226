@@ -1,160 +1,117 @@
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-private final ReentrantLock lock = new ReentrantLock();
-private final Condition queueEmpty = lock.newCondition();
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 /**
- * Custom thread pool implementation that manages a fixed number of threads and a queue of tasks to be executed.
- * Tasks are executed by worker threads from the task queue.
+ * @class ThreadPool Contains a list of worker threads to execute Runnable tasks from a task queue.
  */
-public class ThreadPool {
+class ThreadPool {
     /**
-     * Queue for the tasks that need to be executed
-     * A blocking queue is used to safely manage concurrent access by multiple threads.
+     * List of worker threads.
      */
-    private BlockingQueue<Runnable> taskQueue;
+    private final List<Worker> workers;
     /**
-     * List of all the tasks submitted
+     * List of Runnable tasks for the workers to execute.
      */
-    private List<PoolThreadRunnable> tasks = new ArrayList<>(); 
+    private final BlockingQueue<Runnable> taskQueue;
     /**
-     * Boolean value indicating if the thread pool has terminated
-     */
-    private boolean terminated = false;
-    /**
-     * ReentrantLock used to manage thread access to shared resources.
-     */
+     * Boolean value indicating if the pool has terminated execution.
+    */
+    private AtomicBoolean isShutdown = new AtomicBoolean(false);
     private final ReentrantLock lock = new ReentrantLock();
     /**
-     * Latch for waiting on tasks to finish.
+     * Condition to signal all threads that execution has terminated.
      */
-    private CountDownLatch latch;
-    /**
-     * Counter for completed tasks.
-     */
-    private final AtomicInteger completedTaskCount = new AtomicInteger(0);
+    private final Condition condition = lock.newCondition();
+    private AtomicInteger activeTasks = new AtomicInteger(0);
+    private AtomicInteger completedTasks = new AtomicInteger(0);
 
     /**
-     * Constructor for the thread pool.
-     * Creates a PoolThreadRunnable for each thread and adds it to the tasks list.
-     * Iterates through the tasks list and creates a new thread for each task.
-     * @param numThreads The number of threads to add to the thread pool.
-     * @param maxNumTasks The maximum number of tasks submitted for the threads to execute.
+     * Public constructor for the thread pool.
+     * @param numberOfThreads The number of threads the pool should manage.
      */
-    public ThreadPool(int numThreads, int maxNumTasks) {
-        taskQueue = new ArrayBlockingQueue(maxNumTasks);
-        latch = new CountDownLatch(maxNumTasks);
+    public ThreadPool(int numberOfThreads) {
+        workers = new LinkedList<>();
+        taskQueue = new LinkedBlockingQueue<>();
 
-        for(int i = 0; i < numThreads; i++) {
-            PoolThreadRunnable pool_thread_runnable = new PoolThreadRunnable(taskQueue);
-            tasks.add(pool_thread_runnable);
-            new Thread(pool_thread_runnable).start();
+        for (int i = 0; i < numberOfThreads; i++) {
+            Worker worker = new Worker();
+            workers.add(worker);
+            worker.start();
         }
     }
 
-    /**
-     * Submits a new task to the threadPool for execution.
-     * The task is added to the queue and the worker threads will execute it.
-     *
-     * @param task The Runnable task to be executed.
-     * @throws IllegalStateException If the threadPool has been terminated.
-     */
-    public void execute(Runnable task) throws Exception{
-        lock.lock();
-        try {
-            if(terminated) throw new IllegalStateException("ThreadPool has termintated.");
-            taskQueue.offer(() -> {
-                try {
-                    task.run();
-                } finally {
-                    completedTaskCount.incrementAndGet();
-                    latch.countDown(); 
-                }
-            });
-        } finally {
-            lock.unlock();
+    public void execute(Runnable task) {
+        if (isShutdown.get()) {
+            throw new IllegalStateException("ThreadPool is shut down");
         }
+        activeTasks.getAndIncrement();
         
-    }
-    
-    /**
-     * Waits for all tasks in the queue to finish execution.
-     * This met
-     */
-    public void waitUntilFinished() {
-        lock.lock();
-        try {
-              latch.await();  // Wait for all tasks to complete
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    public int getActiveThreads() {
-        return (int) tasks.stream().filter(t -> !t.isStopped.get()).count();
-    }
-
-    public int getQueueSize() {
-        return taskQueue.size();
-    }
-
-    public int getCompletedTasks() {
-        return completedTaskCount.get();  
-    }
-
-    /**
-     * Prevents tasks from taking too long to execute by wrapping the Runnable in a timed execution block.
-     */
-    public void executeWithTimeout(Runnable task, long timeout, TimeUnit unit) throws Exception {
-        Future<?> future = submit(() -> {
-            task.run();
-            return null;
+        taskQueue.offer(() -> {
+            try {
+                task.run();
+            } finally {
+                completeTask();
+            }
         });
 
+    }
+
+    private void completeTask() {
+        lock.lock();
         try {
-            future.get(timeout, unit);
-        } catch (TimeoutException e) {
-            future.cancel(true);  
-            throw new Exception("Task execution exceeded the timeout.");
+            activeTasks.decrementAndGet();
+            completedTasks.incrementAndGet();
+            if (activeTasks.get() == 0 && isShutdown.get()) {
+                condition.signalAll(); 
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
-
-
-    /**
-     * Shuts down the thread pool.
-     * This method sets the terminated flag and stops all worker threads from executing further tasks.
-     */
     public void shutdown() {
+        isShutdown.set(true); 
+        for (Worker worker : workers) {
+            worker.interrupt(); 
+        }
+    }
+
+    public void slowShutdown() {
+        isShutdown.set(true);
+    }
+
+    public void awaitTermination() throws InterruptedException {
         lock.lock();
         try {
-            terminated = true; 
-            for (PoolThreadRunnable task : tasks) {
-                task.stop();  
+            while (activeTasks.get() > 0) {
+                condition.await(); 
             }
+            shutdown();
+            
         } finally {
             lock.unlock();
         }
     }
 
-    public void shutdownNow() {
-        lock.lock();
-        try {
-            for (PoolThreadRunnable task : tasks) {
-                task.stop();
-                Thread.currentThread().interrupt();
+    private class Worker extends Thread {
+        @Override
+        public void run() {
+            while (!isShutdown.get()) {
+                try {
+                    Runnable task = taskQueue.take(); 
+                    task.run();
+                } catch (InterruptedException e) {
+                    if (isShutdown.get()) {
+                        break; 
+                    }
+                }
             }
-        } finally {
-            lock.unlock();
         }
     }
 }
+
