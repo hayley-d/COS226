@@ -2,9 +2,9 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
 public class LockFreeExchanger<T extends Comparable<T>> {
-    static fianl AtomicInteger EMPTY = new AtomicInteger(-1);
-    static fianl AtomicInteger WAITING = new AtomicInteger(0);
-    static fianl AtomicInteger BUSY = new AtomicInteger(1);
+    static final int EMPTY = -1;
+    static final int WAITING = 0;
+    static final int BUSY = 1;
 
     AtomicStampedReference<T> slot = new AtomicStampedReference<T>(null,0);
 
@@ -22,7 +22,7 @@ public class LockFreeExchanger<T extends Comparable<T>> {
         long nano = unit.toNanos(timeout);
         long timeBound = System.nanoTime() + nano;
 
-        int[] stampHolder = {EMPTY};
+        int[] state = {EMPTY};
 
         while(true) {
             if(System.nanoTime() > timeBound) {
@@ -30,8 +30,8 @@ public class LockFreeExchanger<T extends Comparable<T>> {
                 throw new TimeoutException();
             }
 
-            T otherValue = this.slot.get(stampHolder);
-            int stamp = stampHolder[0];
+            T otherValue = this.slot.get(state);
+            int stamp = state[0];
 
             switch(stamp) {
                 // If the state is EMPTY then try place item in the slot and set state to WAITING
@@ -41,9 +41,9 @@ public class LockFreeExchanger<T extends Comparable<T>> {
                         // Spin until time is up
                         while(System.nanoTime() < timeBound) {
                             // Check the slot
-                            otherValue = this.slot.get(stampHolder);
+                            otherValue = this.slot.get(state);
                             // If state = BUSY = another thread has shown up
-                            if(stampHolder[0] == BUSY) {
+                            if(state[0] == BUSY) {
                                 this.slot.set(null,EMPTY);
                                 return otherValue;
                             }
@@ -53,7 +53,7 @@ public class LockFreeExchanger<T extends Comparable<T>> {
                         if(this.slot.compareAndSet(myItem,null,WAITING,EMPTY)) {
                             throw new TimeoutException();
                         } else {
-                            otherValue = slot.get(stampHolder);
+                            otherValue = slot.get(state);
                             slot.set(null,EMPTY);
                             return otherValue;
                         }
