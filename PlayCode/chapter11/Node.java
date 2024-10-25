@@ -7,4 +7,8 @@ public class Node<T extends Comparable<T>> {
         this.value = value;
         this.next = null;
     }
+
+    public T getValue() {
+        return this.value;
+    }
 }
