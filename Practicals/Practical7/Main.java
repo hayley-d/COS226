@@ -15,9 +15,7 @@ import java.util.Random;
             for (int threadCount : threadCounts) {
                 System.out.println("\n" + threadCount + " Thread Test:");
                 testLockFree(lock_free, threadCount);
-                System.out.println("\n" + threadCount + " Thread Test:");
                 testEliminationStack(elim_stack, threadCount);
-                System.out.println("\n" + threadCount + " Thread Test:");
                 testSequential(stack,threadCount);
              }
          } catch (Exception e) {
@@ -54,9 +52,9 @@ import java.util.Random;
          } 
 
          long endTime = System.nanoTime();
-         System.out.println("Lock-Free Stack Push Time: " + (endTime-startTime));
+         System.out.println("Lock-Free Stack Push/Pop Time: " + (endTime-startTime) +"ns | " + ((endTime-startTime)/100000));
 
-         startTime = System.nanoTime();
+         /*startTime = System.nanoTime();
          try {
              for(int i = 0; i < threadCount; i++) {
                  executor.submit(() -> {
@@ -79,11 +77,11 @@ import java.util.Random;
              }
          } catch (Exception e) {
             return;
-         }finally {
+         }finally {*/
              endTime = System.nanoTime();
-             System.out.println("Lock-Free Stack Pop Time: " + (endTime-startTime));
+             //System.out.println("Lock-Free Stack Pop Time: " + (endTime-startTime));
              shutdownExecutor(executor);
-         }
+         //}
      }
 
      protected static void testEliminationStack(EliminationBackoffStack<Integer> stack, int threadCount) {
@@ -116,9 +114,9 @@ import java.util.Random;
          } 
 
          long endTime = System.nanoTime();
-         System.out.println("Elimination Backoff Stack Push Time: " + (endTime-startTime));
+         System.out.println("Elimination Backoff Stack Push/Pop Time: " + (endTime-startTime) +"ns | " + ((endTime-startTime)/100000));
 
-         startTime = System.nanoTime();
+         /*startTime = System.nanoTime();
          try {
              for(int i = 0; i < threadCount; i++) {
                  executor.submit(() -> {
@@ -141,11 +139,11 @@ import java.util.Random;
              }
          } catch (Exception e) {
             return;
-         }finally {
+         }finally {*/
              endTime = System.nanoTime();
-             System.out.println("Elimination Backoff Stack Pop Time: " + (endTime-startTime));
+             //System.out.println("Elimination Backoff Stack Pop Time: " + (endTime-startTime));
              shutdownExecutor(executor);
-         }
+         //}
      }
 
      protected static void testSequential(SequentialStack<Integer> stack, int threadCount) {
@@ -178,9 +176,9 @@ import java.util.Random;
          } 
 
          long endTime = System.nanoTime();
-         System.out.println("Sequential Stack Push Time: " + (endTime-startTime));
+         System.out.println("Sequential Stack Push Time: " + (endTime-startTime) +"ns | " + ((endTime-startTime)/100000));
 
-         startTime = System.nanoTime();
+         /*startTime = System.nanoTime();
          try {
              for(int i = 0; i < threadCount; i++) {
                  executor.submit(() -> {
@@ -203,11 +201,11 @@ import java.util.Random;
              }
          } catch (Exception e) {
             return;
-         }finally {
+         }finally {*/
              endTime = System.nanoTime();
-             System.out.println("Sequential Stack Pop Time: " + (endTime-startTime));
+             //System.out.println("Sequential Stack Pop Time: " + (endTime-startTime));
              shutdownExecutor(executor);
-         }
+         //}
      }
 
      private static void shutdownExecutor(ExecutorService executor) {
