@@ -2,7 +2,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class EliminationArray<T extends Comparable<T>> {
-    private static final int duration = 1000;
+    private static final int duration = 2000;
     LockFreeExchanger<T>[] exchanger;
     Random random;
 

@@ -12,7 +12,7 @@ public class EliminationBackoffStack<T extends Comparable<T>> extends LockFreeSt
 
     public EliminationBackoffStack(int c) {
         this.capacity = c;
-        this.eliminationArray = new EliminationArray(c);
+        this.eliminationArray = new EliminationArray(c/2);
     }
 
     @Override
